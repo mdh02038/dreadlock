@@ -1,6 +1,6 @@
 /*****************************************************************************
  * Copyright (C) 1997-2017, Mark Hummel
- * This file is part of Vrq.
+ * This file is part of Dreadlock.
  *
  * Dreadlock is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
