@@ -76,7 +76,10 @@ void	ParseArguments( int argc, const char** argv )
             } else if( !strcmp( &argv[i][1], "-help" ) ) {
                 PrintUsage();
                 exit(0);
-            } 
+            } else {
+		PrintUsage();
+		exit(1);
+	    }
             break;
         default:
             fileList.push_back( argv[i] );
@@ -85,7 +88,8 @@ void	ParseArguments( int argc, const char** argv )
     }
 }
 
-int main() {
+int main( int argc, const char** argv ) {
+    ParseArguments( argc, argv );
     parse();
 }
 
