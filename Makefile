@@ -1,4 +1,4 @@
-all: calc
+all: dreadlock
 
 parse.tab.c parse.tab.h:	parse.y
 	bison -d parse.y
@@ -6,9 +6,9 @@ parse.tab.c parse.tab.h:	parse.y
 lex.yy.c: lex.l parse.tab.h
 	flex lex.l
 
-calc: lex.yy.c parse.tab.c parse.tab.h main.cc
-	gcc -o calc main.cc parse.tab.c lex.yy.c
+dreadlock: lex.yy.c parse.tab.c parse.tab.h main.cc
+	gcc -o dreadlock main.cc parse.tab.c lex.yy.c -lstdc++
 
 clean:
-	rm calc parse.tab.c lex.yy.c parse.tab.h
+	rm dreadlock parse.tab.c lex.yy.c parse.tab.h
 
