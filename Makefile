@@ -1,14 +1,14 @@
 all: dreadlock
 
-parse.tab.c parse.tab.h:	parse.y
-	bison -d parse.y
+parse.tab.cc parse.tab.hh:	parse.yy
+	bison -d parse.yy
 
-lex.yy.c: lex.l parse.tab.h
-	flex lex.l
+lex.yy.cc: lex.ll parse.tab.hh
+	flex -o lex.yy.cc lex.ll
 
-dreadlock: lex.yy.c parse.tab.c parse.tab.h main.cc
-	gcc -o dreadlock main.cc parse.tab.c lex.yy.c -lstdc++
+dreadlock: lex.yy.cc parse.tab.cc parse.tab.hh main.cc
+	gcc -o dreadlock main.cc parse.tab.cc lex.yy.cc -lstdc++
 
 clean:
-	rm dreadlock parse.tab.c lex.yy.c parse.tab.h
+	@rm -f dreadlock parse.tab.cc lex.yy.cc parse.tab.hh
 
