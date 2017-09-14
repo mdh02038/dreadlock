@@ -19,13 +19,14 @@
  *****************************************************************************
  */
 
-int parse();
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>
 
 using namespace std;
+int parse( const char* );
 
 vector<string> fileList;
 
@@ -88,8 +89,16 @@ void	ParseArguments( int argc, const char** argv )
     }
 }
 
+struct ParseFile {
+    ParseFile() {}
+    void operator()( const string &s ) {
+	cout << "parsing: " << s << " ..." << endl;
+	parse( s.c_str() );
+    }
+};
+
 int main( int argc, const char** argv ) {
     ParseArguments( argc, argv );
-    parse();
+    for_each( fileList.begin(), fileList.end(), ParseFile() );
 }
 

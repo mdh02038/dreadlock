@@ -18,48 +18,27 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
 
-%{
+#ifndef DEFS_H
+#define DEFS_H
+
 #include <stdio.h>
-#include "defs.h"
+#include <stdlib.h>
+#include <string>
 
-#define YY_DECL int yylex()
+using namespace std;
 
-#include "parse.tab.hh"
+typedef struct {
+    char* first;
+    char* second;
+} symbolpair;
 
-//#define NEW_LINE	loc.lineno++;
-#define NEW_LINE	;
-
-%}
-
-%x COMMENT
-
-%%
+typedef struct {
+    symbolpair first;
+    symbolpair second;
+} rulepair;
 
 
-[ \t\f\r]	; // ignore all whitespace
+#endif // DEFS_H
 
-"VC"		{return VC;}
-"BUS"		{return BUS;}
-"CHECK"		{return CHECK;}
-"CONFIG"	{return CONFIG;}
-"RUN"		{return RUN;}
-"UNIT"		{return UNIT;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"<=>"		{return DOUBLE_ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = strdup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-
-%%
 

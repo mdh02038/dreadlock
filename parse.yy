@@ -19,73 +19,137 @@
  *****************************************************************************
  */
 %{
-#include <stdio.h>
-#include <stdlib.h>
+#include "defs.h"
+
+
 extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
 void yyerror(const char* s);
+
+
 %}
 
 %union {
-	int ival;
-	float fval;
-}
+    char* symbol;
+    rulepair rpair;
+    symbolpair spair;
+};
 
-%token<ival> T_INT
-%token<fval> T_FLOAT
-%token T_PLUS T_MINUS T_MULTIPLY T_DIVIDE T_LEFT T_RIGHT
-%token T_NEWLINE T_QUIT
-%left T_PLUS T_MINUS
-%left T_MULTIPLY T_DIVIDE
+%token <symbol> SYMBOL
+%token '{' '}' '.' BUS VC CHECK RUN UNIT ARROW DOUBLE_ARROW CONFIG
 
-%type<ival> expression
-%type<fval> mixed_expression
+%type<spair> vc_spec
+%type<rpair> rule 
 
-%start calculation
+%start description
 
 %%
-
-calculation: 
-	   | calculation line
+description: 
+	| description statement
 ;
 
-line: T_NEWLINE
-    | mixed_expression T_NEWLINE { printf("\tResult: %f\n", $1);}
-    | expression T_NEWLINE { printf("\tResult: %i\n", $1); } 
-    | T_QUIT T_NEWLINE { printf("bye!\n"); exit(0); }
+statement: bus_definition
+	| unit_definition
+	| check_statement
+	| run_statement
+	| configuration_block
 ;
 
-mixed_expression: T_FLOAT                 		 { $$ = $1; }
-	  | mixed_expression T_PLUS mixed_expression	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS mixed_expression	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY mixed_expression { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | T_LEFT mixed_expression T_RIGHT		 { $$ = $2; }
-	  | expression T_PLUS mixed_expression	 	 { $$ = $1 + $3; }
-	  | expression T_MINUS mixed_expression	 	 { $$ = $1 - $3; }
-	  | expression T_MULTIPLY mixed_expression 	 { $$ = $1 * $3; }
-	  | expression T_DIVIDE mixed_expression	 { $$ = $1 / $3; }
-	  | mixed_expression T_PLUS expression	 	 { $$ = $1 + $3; }
-	  | mixed_expression T_MINUS expression	 	 { $$ = $1 - $3; }
-	  | mixed_expression T_MULTIPLY expression 	 { $$ = $1 * $3; }
-	  | mixed_expression T_DIVIDE expression	 { $$ = $1 / $3; }
-	  | expression T_DIVIDE expression		 { $$ = $1 / (float)$3; }
+bus_definition: BUS SYMBOL '{' vc_declaration_list '}'
+	{ printf( "bus %s\n", $2 ); }
 ;
 
-expression: T_INT				{ $$ = $1; }
-	  | expression T_PLUS expression	{ $$ = $1 + $3; }
-	  | expression T_MINUS expression	{ $$ = $1 - $3; }
-	  | expression T_MULTIPLY expression	{ $$ = $1 * $3; }
-	  | T_LEFT expression T_RIGHT		{ $$ = $2; }
+vc_declaration_list: 
+	| vc_declaration_list vc_declaration
 ;
+
+vc_declaration: VC SYMBOL 
+    { printf( "vc %s\n", $2 ) }
+;
+
+bus_declaration: SYMBOL SYMBOL 
+    { printf( "%s is an instance of BUS %s\n", $2, $1 ); }
+
+unit_definition: 
+	UNIT SYMBOL '{' unit_statements '}'
+	;
+
+unit_statements:
+	| unit_statements unit_statement
+	;
+
+unit_statement: bus_declaration
+	| rule
+	;
+
+rule:  vc_spec ARROW vc_spec
+	{ $$.first = $1; $$.second = $3; 
+	    printf( "rule: %s.%s -> %s.%s\n", $1.first, $1.second, $3.first, $3.second );
+        }
+	;
+
+vc_spec:  SYMBOL
+	{ $$.first = $1; $$.second = strdup("*"); }
+        | SYMBOL '.' '*' 
+	{ $$.first = $1; $$.second = strdup("*"); }
+	| SYMBOL '.' SYMBOL
+	{ $$.first = $1; $$.second = $3; }
+	;
+
+check_statement: CHECK SYMBOL
+	{ printf( "check %s\n", $2 ); }
+	;
+
+run_statement: RUN SYMBOL
+	{ printf( "run %s\n", $2 ); }
+	;
+
+config_statements:
+	| config_statements config_statement
+	;
+
+config_statement: unit_instance
+	| connect_statement
+	;
+
+configuration_block: CONFIG SYMBOL '{' config_statements '}'
+	{ printf( "config %s\n", $2 ); }
+	;
+	
+unit_instance: SYMBOL SYMBOL
+	{ printf( "unit_instance %s %s\n", $1, $2 ); }
+	;
+
+connect_statement: SYMBOL '.' SYMBOL DOUBLE_ARROW SYMBOL '.' SYMBOL
+	{ printf( "connect: %s.%s <=> %s.%s\n", $1, $3, $5, $7 ); }
+	;
+
+//bus_type, bus_name, vc_name, unit_name: [a-zA-Z][a-zA-Z0-9_]
+//
+//
+//
+//statement: 
+//	configuration_statement
+//	check_statement
+//	run_statement
+//
+//
+//configuration_statement: CONFIG config_name { (unit_instance | connect_statement)* }
+//
 
 %%
-int parse() {
-	yyin = stdin;
+int parse( const char* filename ) {
+	yyin = fopen( filename, "r" );
+	if( !yyin ) {
+	    fprintf( stderr, "Cannot open file: %s\n", filename );
+	    return 0;
+	}
 	do { 
 		yyparse();
 	} while(!feof(yyin));
+        fclose( yyin );
+	yyin = NULL;
 	return 0;
 }
 void yyerror(const char* s) {

@@ -41,6 +41,10 @@ unit_definition:
 
 bus_declaration: bus_type bus_name ';'
 
-rule:  { (bus_name[.vc_name] -> bus_name[.vc_name])* }
+rule:  { (bus_name[.(vc_name|*)] -> bus_name[.(vc_name|*)])* }
+
+configuration_statement: CONFIG config_name { (unit_instance | connect_statement)* }
+check_statement: CHECK config_name
+run_statement: RUN config_name
 
 
