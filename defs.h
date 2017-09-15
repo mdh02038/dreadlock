@@ -28,16 +28,36 @@
 
 using namespace std;
 
-typedef struct {
-    char* first;
-    char* second;
-} symbolpair;
+/**
+ * Short cut for signed 32 bit integer.
+ */
+typedef long		   INT32;
+/**
+ * Short cut for unsigned 32 bit integer.
+ */
+typedef unsigned long	   UINT32;
+/**
+ * Short cut for signed 64 bit integer.
+ */
+typedef signed long long   INT64;
+/**
+ * Short cut for unsigned 64 bit integer.
+ */
+typedef unsigned long long UINT64;
 
-typedef struct {
-    symbolpair first;
-    symbolpair second;
-} rulepair;
+/**
+ * Add invariant checks to code. Failure results in a fatal internal error.
+ * Condition \a c must be true.
+ * \ingroup utilities
+ */
+#define ASSERT(c) if(!(c)) { xassert( __FILE__, __LINE__ ); abort(); }
 
+/**
+ * Add invariant checks to code. Failure results in a fatal internal error.
+ * Pointer \a p must not be NULL.
+ * \ingroup utilities
+ */
+#define THROW_NIL(p) MASSERT(p!=NULL);
 
 #endif // DEFS_H
 

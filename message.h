@@ -18,51 +18,40 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
 
-%{
-#include <stdio.h>
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
 #include "defs.h"
 #include "lex.h"
 
-#define YY_DECL int yylex()
+/**
+ * This routine should not be used by plugins.
+ * \todo Cleanup internal and remove the use of these.
+ */
+void warning( Coord* coord, const char* format, ... );
+/**
+ * This routine should not be used by plugins.
+ * \todo Cleanup internal and remove the use of these.
+ */
+void error( Coord* coord, const char* format, ... );
+/**
+ * This routine should not be used by plugins.
+ * \todo Cleanup internal and remove the use of these.
+ */
+void info( Coord* coord, const char* format, ... );
+/**
+ * This routine should not be used by plugins.
+ * \todo Cleanup internal and remove the use of these.
+ */
+void fatal( Coord* coord, const char* format, ... );
 
-#include "parse.tab.hh"
-extern Coord loc;
+void	vlogprintf( const char* format, va_list args );
+void	logprintf( const char* format, ... );
+inline void xassert(const char* filename, unsigned long lineno ) { 
+	fatal( NULL, "Assertion Failure -> %s[%d]\n", filename, lineno );
+}
 
-#define NEW_LINE	loc.lineno++;
+#endif // MESSAGE_H
 
-%}
-
-%x COMMENT
-
-%%
-
-
-[ \t\f\r]	; // ignore all whitespace
-
-"VC"		{return VC;}
-"BUS"		{return BUS;}
-"CHECK"		{return CHECK;}
-"CONFIG"	{return CONFIG;}
-"RUN"		{return RUN;}
-"UNIT"		{return UNIT;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"<=>"		{return DOUBLE_ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = strdup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-.		{ return yytext[0]; } 
-
-
-%%
 

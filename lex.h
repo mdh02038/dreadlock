@@ -18,51 +18,31 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
 
-%{
+#ifndef LEX_H
+#define LEX_H
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <string>
 #include "defs.h"
-#include "lex.h"
-
-#define YY_DECL int yylex()
-
-#include "parse.tab.hh"
-extern Coord loc;
-
-#define NEW_LINE	loc.lineno++;
-
-%}
-
-%x COMMENT
-
-%%
 
 
-[ \t\f\r]	; // ignore all whitespace
+struct Coord {
+    string        filename;
+    unsigned long lineno;
+};
 
-"VC"		{return VC;}
-"BUS"		{return BUS;}
-"CHECK"		{return CHECK;}
-"CONFIG"	{return CONFIG;}
-"RUN"		{return RUN;}
-"UNIT"		{return UNIT;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"<=>"		{return DOUBLE_ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = strdup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-.		{ return yytext[0]; } 
+typedef struct {
+    char* first;
+    char* second;
+} symbolpair;
 
+typedef struct {
+    symbolpair first;
+    symbolpair second;
+} rulepair;
 
-%%
+#endif // LEX_H
+
 
