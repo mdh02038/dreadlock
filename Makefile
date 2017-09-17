@@ -3,7 +3,10 @@ all: dreadlock
 CFILES = \
 	main.cc \
 	cobstack.cc \
-        message.cc
+        message.cc \
+	csymbol.cc \
+	cdecl.cc \
+	cvc.cc
 
 parse.tab.cc parse.tab.hh:	parse.yy
 	bison -d parse.yy

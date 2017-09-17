@@ -23,7 +23,6 @@
 #define MESSAGE_H
 
 #include "defs.h"
-#include "lex.h"
 
 /**
  * This routine should not be used by plugins.

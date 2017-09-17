@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include "defs.h"
 #include "lex.h"
+#include "csymbol.h"
 
 #define YY_DECL int yylex()
 
@@ -54,7 +55,7 @@ extern Coord loc;
 "->"		{return ARROW;}
 "<=>"		{return DOUBLE_ARROW;}
 "//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = strdup(yytext); return SYMBOL;}
+[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
 "/*"		{ BEGIN COMMENT; }
 <COMMENT>[^*\n]* 	{}
 <COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }

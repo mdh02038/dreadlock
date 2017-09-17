@@ -18,27 +18,29 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
+/******************************************************************************
+ *
+ *
+ *	   cdecl.cpp
+ *		- methods for declarations 
+ *
+ *
+ ******************************************************************************
+ */
 
-#ifndef LEX_H
-#define LEX_H
+#define CDECL_CC
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include "defs.h"
-#include "csymbol.h"
+#include "cdecl.h"
 
+/************************************************************
+  	Copy
+	- perform deep copy from given object to this object
+ ***********************************************************/
 
-typedef struct {
-    CSymbol* first;
-    CSymbol* second;
-} symbolpair;
-
-typedef struct {
-    symbolpair first;
-    symbolpair second;
-} rulepair;
-
-#endif // LEX_H
-
+void CDecl::Copy( CObstack* heap, const CDecl& o )
+{
+    loc           = o.loc;
+    symbol        = o.symbol;
+    type          = o.type;
+}
 

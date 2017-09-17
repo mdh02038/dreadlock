@@ -59,6 +59,11 @@ typedef unsigned long long UINT64;
  */
 #define THROW_NIL(p) MASSERT(p!=NULL);
 
+struct Coord {
+    string        filename;
+    unsigned long lineno;
+};
+
 #endif // DEFS_H
 
 

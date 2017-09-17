@@ -31,7 +31,7 @@
 #ifndef CSYMTAB_HPP
 #define CSYMTAB_HPP
 
-#include "glue.h"
+#include "defs.h"
 #include "cdecl.h"
 #include <map>
 #include <list>
@@ -238,7 +238,7 @@ void ImportSearchTable( CSymtab<T1>& table )
  * \param f file descriptor.
  * \param recurse zero if only current depth should be dumped.
  */
-void	Dump( FILE *f, int recurse ) 
+void	Dump( FILE *f, int recurse=true ) 
 {
 	table->Dump( f, recurse );
 }

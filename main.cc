@@ -24,11 +24,14 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include "cobstack.h"
+#include "csymbol.h"
 
 using namespace std;
 int parse( const char* );
 
 vector<string> fileList;
+CObstack permStack("permStack");	// used for symbols
 
 #define DREADLOCK "Dreadlock"
 #define VERSION "0.0.1"
@@ -98,6 +101,7 @@ struct ParseFile {
 };
 
 int main( int argc, const char** argv ) {
+    CSymbol::SetObstack( &permStack );
     ParseArguments( argc, argv );
     for_each( fileList.begin(), fileList.end(), ParseFile() );
 }
