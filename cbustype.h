@@ -21,14 +21,14 @@
 /******************************************************************************
  *
  *
- *	   cvc.hpp
- *		- class declaration of vc declaration
+ *	   cbustype.hpp
+ *		- class definition of bus definition
  *
  ******************************************************************************
  */
 
-#ifndef CVC_H
-#define CVC_H
+#ifndef CBUSTYPE_H
+#define CBUSTYPE_H
 
 #include <stdio.h>
 #include "defs.h"
@@ -43,7 +43,7 @@
 /**
  * Declaration object for variables.
  */
-class CVc: public CDecl
+class CBusType: public CDecl
 {
 private:
 public:
@@ -54,7 +54,7 @@ public:
  	 * \param dataType variable data type.
  	 * \param undefined non-zero if register is undefined in source.
  	 */
-	CVc( CSymbol* symbol, Coord* aLoc );
+	CBusType( CSymbol* symbol, Coord* aLoc );
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.
@@ -62,7 +62,7 @@ public:
  	 */
 	virtual CDecl* Clone( CObstack* heap );
 	/**
- 	 * Dump vc info to file.
+ 	 * Dump Bus info to file.
  	 * \param f file descriptor.
  	 */
 	virtual void Dump( FILE* f );
@@ -70,12 +70,12 @@ protected:
 	/*
  	 * Deep Copy.
  	 */
-	void Copy( CObstack* heap, CVc& var );
+	void Copy( CObstack* heap, CBusType& var );
 private:
 	/*
  	 * Disable copy constructor.
  	 */
-	CVc( const CVc& vc );
+	CBusType( const CBusType& bus );
 };
 
-#endif // CVC_H
+#endif // CBUSTYPE_H

@@ -6,10 +6,14 @@ CFILES = \
         message.cc \
 	csymbol.cc \
 	cdecl.cc \
-	cvc.cc
+	cvc.cc \
+	cbus.cc \
+	cbustype.cc \
+	cmodule.cc \
+	cinstance.cc \
 
 parse.tab.cc parse.tab.hh:	parse.yy
-	bison -d parse.yy
+	bison -v -d parse.yy
 
 lex.yy.cc: lex.ll parse.tab.hh
 	flex -o lex.yy.cc lex.ll

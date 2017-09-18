@@ -26,6 +26,10 @@
 #include "csymbol.h"
 #include "csymtab.h"
 #include "cvc.h"
+#include "cbus.h"
+#include "cbustype.h"
+#include "cmodule.h"
+#include "cinstance.h"
 
 
 extern int yylex();
@@ -43,16 +47,14 @@ CObstack* declHeap = &declHeapObject;
 
 %union {
     CSymbol* symbol;
-    rulepair rpair;
     symbolpair spair;
 };
 
 %token <symbol> SYMBOL
-%token '{' '}' '.' BUS VC CHECK RUN UNIT ARROW DOUBLE_ARROW CONFIG
+%token '{' '}' '.' ';' ',' BUS VC CHECK RUN MODULE ARROW IGNORE FROM
 
 %type<spair> port_spec
-%type<rpair> rule 
-%type <symbol> vc_name bus_type bus_name unit_type unit_name config_name
+%type <symbol> vc_name bus_type bus_name module_name instance_name
 
 
 %start description
@@ -63,97 +65,141 @@ description:
 ;
 
 statement: bus_definition
-	| unit_definition
 	| check_statement
 	| run_statement
-	| configuration_block
+	| module
 ;
 
-bus_definition: BUS bus_type '{' vc_declaration_list '}'
+bus_definition: BUS bus_type '{' bus_statements '}'
 	{ printf( "bus %s\n", $2->GetName() ); }
 ;
 
-vc_declaration_list: 
-	| vc_declaration_list vc_declaration
+bus_statements: 
+	| bus_statements bus_statement 
 ;
 
-vc_declaration: VC vc_name 
+bus_statement: VC vc_name  ';'
     { printf( "vc %s\n", $2->GetName() ) }
+    | SYMBOL ARROW SYMBOL ';'
 ;
 
-bus_declaration: bus_type bus_name 
-    { printf( "%s is an instance of BUS %s\n", $2->GetName(), $1->GetName() ); }
-
-unit_definition: 
-	UNIT unit_type '{' unit_statements '}'
-	;
-
-unit_statements:
-	| unit_statements unit_statement
-	;
-
-unit_statement: bus_declaration
-	| rule
-	;
-
-rule:  port_spec ARROW port_spec
-	{ $$.first = $1; $$.second = $3; 
-	    printf( "rule: %s.%s -> %s.%s\n", $1.first->GetName(), $1.second->GetName(), $3.first->GetName(), $3.second->GetName() );
-        }
-	;
 
 port_spec:  bus_name
 	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
         | bus_name '.' '*' 
 	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
-	| bus_name '.' bus_name
+	| bus_name '.' vc_name
 	{ $$.first = $1; $$.second = $3; }
 	;
 
-check_statement: CHECK config_name
+check_statement: CHECK module_name ';'
 	{ printf( "check %s\n", $2->GetName() ); }
 	;
 
-run_statement: RUN config_name
+run_statement: RUN module_name ';'
 	{ printf( "run %s\n", $2->GetName() ); }
 	;
 
-config_statements:
-	| config_statements config_statement
+module_statements:
+	| module_statements module_statement
 	;
 
-config_statement: unit_instance
-	| connect_statement
+port_list_o: 
+	| port_list
 	;
 
-configuration_block: CONFIG config_name '{' config_statements '}'
-	{ printf( "config %s\n", $2->GetName() ); }
+port_list: port
+	| port_list ',' port
 	;
 	
-unit_instance: unit_type unit_name
-	{ printf( "unit_instance %s %s\n", $1->GetName(), $2->GetName() ); }
+port: SYMBOL '(' ')'
+	| SYMBOL '(' SYMBOL ')'
 	;
 
-connect_statement: bus_name '.' vc_name DOUBLE_ARROW bus_name '.' vc_name
-	{ printf( "connect: %s.%s <=> %s.%s\n", $1->GetName(), $3->GetName(), $5->GetName(), $7->GetName() ); }
+module_statement: 
+        module_name instance_name '(' port_list_o ')' ';'
+	{ printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); }
+        | port_spec ARROW port_spec ';'
+	{ printf( "rule: %s.%s -> %s.%s\n", $1.first->GetName(), $1.second->GetName(), $3.first->GetName(), $3.second->GetName() ); }
+	| IGNORE port_spec FROM module_name
+	;
+
+module: MODULE module_name '(' port_decl_list_o ')' '{' module_statements '}'
+	{ printf( "module %s\n", $2->GetName() ); }
+	;
+
+port_decl_list_o: 
+	| port_decl_list
+	;
+
+port_decl_list: port_decl
+	| port_decl_list ',' port_decl
+	;
+	
+port_decl: SYMBOL SYMBOL
 	;
 
 vc_name: SYMBOL
     {
  	CDecl* decl = symbolTable.LookupTop($1);	
+	if( decl && decl->GetType() != eVC ) {
+	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
+	}
 	if( !decl ) {
 	    decl = new(declHeap) CVc( $1, &loc );
 	    symbolTable.Add( $1, decl );
 	}
     }
     ;
-bus_type: SYMBOL
 bus_name: SYMBOL
-unit_type: SYMBOL
-unit_name: SYMBOL
-config_name: SYMBOL
+    {
+ 	CDecl* decl = symbolTable.LookupTop($1);	
+	if( decl && decl->GetType() != eBUS ) {
+	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
+	}
+	if( !decl ) {
+	    decl = new(declHeap) CBus( $1, &loc );
+	    symbolTable.Add( $1, decl );
+	}
+    }
+    ;
+bus_type: SYMBOL
+    {
+ 	CDecl* decl = symbolTable.LookupTop($1);	
+	if( decl && decl->GetType() != eBUS_TYPE ) {
+	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
+	}
+	if( !decl ) {
+	    decl = new(declHeap) CBusType( $1, &loc );
+	    symbolTable.Add( $1, decl );
+	}
+    }
+    ;
+module_name: SYMBOL
+    {
+ 	CDecl* decl = symbolTable.LookupTop($1);	
+	if( decl && decl->GetType() != eMODULE ) {
+	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
+	}
+	if( !decl ) {
+	    decl = new(declHeap) CModule( $1, &loc );
+	    symbolTable.Add( $1, decl );
+	}
+    }
+    ;
+instance_name: SYMBOL
+    {
+ 	CDecl* decl = symbolTable.LookupTop($1);	
+	if( decl && decl->GetType() != eINSTANCE ) {
+	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
+	}
+	if( !decl ) {
+	    decl = new(declHeap) CInstance( $1, &loc );
+	    symbolTable.Add( $1, decl );
+	}
+    }
+    ;
 
-//bus_type, bus_name, vc_name, unit_name: [a-zA-Z][a-zA-Z0-9_]
 
 %%
 int parse( const char* filename ) {

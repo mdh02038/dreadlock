@@ -21,61 +21,53 @@
 /******************************************************************************
  *
  *
- *	   cvc.hpp
- *		- class declaration of vc declaration
+ *	   cbus.cpp
+ *		- class definition of bus declaration
  *
  ******************************************************************************
  */
 
-#ifndef CVC_H
-#define CVC_H
-
-#include <stdio.h>
-#include "defs.h"
-#include "cdecl.h"
+#include "cbus.h"
 
 
 
-/*
- * handle variable declarations
- */
 
-/**
- * Declaration object for variables.
- */
-class CVc: public CDecl
+/****************************************************
+	Constructor
+*****************************************************/
+CBus::CBus( CSymbol* name, Coord* aLoc ) 
+    : CDecl( name, aLoc, eBUS ){
+}
+
+/****************************************************
+	Clone
+	- Create a new declaration that is a deep
+	  of this declaration.
+*****************************************************/
+CDecl* CBus::Clone( CObstack* heap )
 {
-private:
-public:
-	/**
- 	 * Create a register declaration.
- 	 * \param symbol declaration symbol.
- 	 * \param aLoc file coordinates.
- 	 * \param dataType variable data type.
- 	 * \param undefined non-zero if register is undefined in source.
- 	 */
-	CVc( CSymbol* symbol, Coord* aLoc );
-	/**
- 	 * Create a clone of this declaration.
- 	 * \param heap heap to use for allocation.
- 	 * \return new declaration.
- 	 */
-	virtual CDecl* Clone( CObstack* heap );
-	/**
- 	 * Dump vc info to file.
- 	 * \param f file descriptor.
- 	 */
-	virtual void Dump( FILE* f );
-protected:
-	/*
- 	 * Deep Copy.
- 	 */
-	void Copy( CObstack* heap, CVc& var );
-private:
-	/*
- 	 * Disable copy constructor.
- 	 */
-	CVc( const CVc& vc );
-};
+    CBus* clone = new(heap) CBus( GetSymbol(), GetCoord() );
+    clone->Copy( heap, *this );
+    return clone;
+}
 
-#endif // CVC_H
+/****************************************************
+	Copy 
+	- perform a deep copy
+*****************************************************/
+void CBus::Copy( CObstack* heap, CBus& bus )
+{
+    CDecl::Copy( heap, bus );
+}
+
+/****************************************************
+	Dump
+*****************************************************/
+void	CBus::Dump( FILE* f )
+{
+    fprintf( f, "%s ", declName[GetType()] );
+    fprintf( f, ": %s, defined in ", GetName() ); 
+    CDecl::Dump( f );
+    fprintf( f, "\n" );
+}	
+

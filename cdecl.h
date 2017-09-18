@@ -43,6 +43,10 @@ class CDecl;
  */
 enum Decl_t {
 	eVC = 0,	///< virtual channel declaration
+	eBUS = 1,	///< bus declaration
+	eBUS_TYPE = 2,	///< bus definition
+	eMODULE = 3,	///< module definition
+        eINSTANCE = 4,	///< module instance
 	eNONE		///< unspecified declaration used for wildcard
 };
 
@@ -53,6 +57,10 @@ enum Decl_t {
  */
 const char* declName[] = {
         "vc",
+  	"bus",
+  	"bustype",
+	"module",
+	"instance",
 	"none"
 };
 #else

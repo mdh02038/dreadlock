@@ -21,13 +21,13 @@
 /******************************************************************************
  *
  *
- *	   cvc.cpp
- *		- class definition of vc declaration
+ *	   cinstance.cpp
+ *		- class definition for instance
  *
  ******************************************************************************
  */
 
-#include "cvc.h"
+#include "cinstance.h"
 
 
 
@@ -35,8 +35,8 @@
 /****************************************************
 	Constructor
 *****************************************************/
-CVc::CVc( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eVC ){
+CInstance::CInstance( CSymbol* name, Coord* aLoc ) 
+    : CDecl( name, aLoc, eINSTANCE ){
 }
 
 /****************************************************
@@ -44,9 +44,9 @@ CVc::CVc( CSymbol* name, Coord* aLoc )
 	- Create a new declaration that is a deep
 	  of this declaration.
 *****************************************************/
-CDecl* CVc::Clone( CObstack* heap )
+CDecl* CInstance::Clone( CObstack* heap )
 {
-    CVc* clone = new(heap) CVc( GetSymbol(), GetCoord() );
+    CInstance* clone = new(heap) CInstance( GetSymbol(), GetCoord() );
     clone->Copy( heap, *this );
     return clone;
 }
@@ -55,15 +55,15 @@ CDecl* CVc::Clone( CObstack* heap )
 	Copy 
 	- perform a deep copy
 *****************************************************/
-void CVc::Copy( CObstack* heap, CVc& vc )
+void CInstance::Copy( CObstack* heap, CInstance& bus )
 {
-    CDecl::Copy( heap, vc );
+    CDecl::Copy( heap, bus );
 }
 
 /****************************************************
 	Dump
 *****************************************************/
-void	CVc::Dump( FILE* f )
+void	CInstance::Dump( FILE* f )
 {
     fprintf( f, "%s ", declName[GetType()] );
     fprintf( f, ": %s, defined in ", GetName() ); 

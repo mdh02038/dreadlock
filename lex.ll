@@ -42,18 +42,22 @@ extern Coord loc;
 
 [ \t\f\r]	; // ignore all whitespace
 
-"VC"		{return VC;}
-"BUS"		{return BUS;}
-"CHECK"		{return CHECK;}
-"CONFIG"	{return CONFIG;}
-"RUN"		{return RUN;}
-"UNIT"		{return UNIT;}
+"vc"		{return VC;}
+"bus"		{return BUS;}
+"check"		{return CHECK;}
+"run"		{return RUN;}
+"module"	{return MODULE;}
+"ignore"	{return IGNORE;}
+"from"		{return FROM;}
 "{"		{return '{';}
 "}"		{return '}';}
 "."		{return '.';}
+","		{return ',';}
+"("		{return '(';}
+")"		{return ')';}
+";"		{return ';';}
 "*"		{return '*';}
 "->"		{return ARROW;}
-"<=>"		{return DOUBLE_ARROW;}
 "//".*		{}
 [a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
 "/*"		{ BEGIN COMMENT; }

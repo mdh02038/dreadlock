@@ -21,13 +21,13 @@
 /******************************************************************************
  *
  *
- *	   cvc.cpp
- *		- class definition of vc declaration
+ *	   cbustype.cpp
+ *		- class definition of bus definition
  *
  ******************************************************************************
  */
 
-#include "cvc.h"
+#include "cbustype.h"
 
 
 
@@ -35,8 +35,8 @@
 /****************************************************
 	Constructor
 *****************************************************/
-CVc::CVc( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eVC ){
+CBusType::CBusType( CSymbol* name, Coord* aLoc ) 
+    : CDecl( name, aLoc, eBUS_TYPE ){
 }
 
 /****************************************************
@@ -44,9 +44,9 @@ CVc::CVc( CSymbol* name, Coord* aLoc )
 	- Create a new declaration that is a deep
 	  of this declaration.
 *****************************************************/
-CDecl* CVc::Clone( CObstack* heap )
+CDecl* CBusType::Clone( CObstack* heap )
 {
-    CVc* clone = new(heap) CVc( GetSymbol(), GetCoord() );
+    CBusType* clone = new(heap) CBusType( GetSymbol(), GetCoord() );
     clone->Copy( heap, *this );
     return clone;
 }
@@ -55,15 +55,15 @@ CDecl* CVc::Clone( CObstack* heap )
 	Copy 
 	- perform a deep copy
 *****************************************************/
-void CVc::Copy( CObstack* heap, CVc& vc )
+void CBusType::Copy( CObstack* heap, CBusType& busType )
 {
-    CDecl::Copy( heap, vc );
+    CDecl::Copy( heap, busType );
 }
 
 /****************************************************
 	Dump
 *****************************************************/
-void	CVc::Dump( FILE* f )
+void	CBusType::Dump( FILE* f )
 {
     fprintf( f, "%s ", declName[GetType()] );
     fprintf( f, ": %s, defined in ", GetName() ); 

@@ -34,11 +34,6 @@ typedef struct {
     CSymbol* second;
 } symbolpair;
 
-typedef struct {
-    symbolpair first;
-    symbolpair second;
-} rulepair;
-
 #endif // LEX_H
 
 

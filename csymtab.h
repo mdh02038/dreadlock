@@ -113,7 +113,7 @@ void	Dump( FILE *f, int recurse, int level = 0 )
 	typename map<CSymbol*,T1*>::iterator ptr;
 
 	for( ptr = this->begin(); ptr != this->end(); ++ptr) {
-		printf( "\t%d::%s => ", level, ptr->first->GetName() );
+		fprintf( f, "\t%d::%s => ", level, ptr->first->GetName() );
 		ptr->second->DumpDeclInfo( f );
 	}
 	if( recurse && previous != NULL ) {
