@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include "defs.h"
 #include "cdecl.h"
+#include "csymtab.h"
+
 
 
 
@@ -46,7 +48,9 @@
 class CModule: public CDecl
 {
 private:
+    CSymtab<CDecl> symtab;
 public:
+	static Decl_t DeclType() { return eMODULE; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.
@@ -55,6 +59,16 @@ public:
  	 * \param undefined non-zero if register is undefined in source.
  	 */
 	CModule( CSymbol* symbol, Coord* aLoc );
+	/** 
+	 * Set symbol table
+	 * \param symtab symbol table
+	 */
+	void Symtab( CSymtab<CDecl>& symtab ) { this->symtab = symtab; }
+	/** 
+	 * Return symbol table
+	 * \return  symbol table
+	 */
+	CSymtab<CDecl>& Symtab() { return symtab; }
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.
@@ -77,5 +91,4 @@ private:
  	 */
 	CModule( const CModule& bus );
 };
-
 #endif // CVC_H

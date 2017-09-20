@@ -21,8 +21,8 @@
 
 #include "message.h"
 
-static unsigned long errorCount = 0;
-static unsigned long warningCount = 0;
+unsigned long errorCount = 0;
+unsigned long warningCount = 0;
 
 /*******************************************************
 	info

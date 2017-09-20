@@ -47,6 +47,7 @@ class CVc: public CDecl
 {
 private:
 public:
+	static Decl_t DeclType() { return eVC; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.

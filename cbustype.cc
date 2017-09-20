@@ -58,6 +58,7 @@ CDecl* CBusType::Clone( CObstack* heap )
 void CBusType::Copy( CObstack* heap, CBusType& busType )
 {
     CDecl::Copy( heap, busType );
+    symtab = busType.symtab;
 }
 
 /****************************************************
@@ -69,5 +70,6 @@ void	CBusType::Dump( FILE* f )
     fprintf( f, ": %s, defined in ", GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
+    symtab.Dump( f, 0 );
 }	
 

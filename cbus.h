@@ -47,6 +47,7 @@ class CBus: public CDecl
 {
 private:
 public:
+	static Decl_t DeclType() { return eBUS; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.

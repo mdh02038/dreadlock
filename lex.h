@@ -27,10 +27,13 @@
 #include <string>
 #include "defs.h"
 #include "csymbol.h"
+#include "cmodule.h"
+#include "cbustype.h"
+#include "cbus.h"
 
 
 typedef struct {
-    CSymbol* first;
+    CBus* first;
     CSymbol* second;
 } symbolpair;
 

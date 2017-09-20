@@ -47,6 +47,7 @@ enum Decl_t {
 	eBUS_TYPE = 2,	///< bus definition
 	eMODULE = 3,	///< module definition
         eINSTANCE = 4,	///< module instance
+        ePORT = 5,	///< port instance
 	eNONE		///< unspecified declaration used for wildcard
 };
 
@@ -61,6 +62,7 @@ const char* declName[] = {
   	"bustype",
 	"module",
 	"instance",
+	"port",
 	"none"
 };
 #else

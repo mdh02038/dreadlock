@@ -55,9 +55,10 @@ CDecl* CModule::Clone( CObstack* heap )
 	Copy 
 	- perform a deep copy
 *****************************************************/
-void CModule::Copy( CObstack* heap, CModule& bus )
+void CModule::Copy( CObstack* heap, CModule& module )
 {
-    CDecl::Copy( heap, bus );
+    CDecl::Copy( heap, module );
+    symtab = module.symtab;
 }
 
 /****************************************************
@@ -69,5 +70,6 @@ void	CModule::Dump( FILE* f )
     fprintf( f, ": %s, defined in ", GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
+    symtab.Dump( f, 0 );
 }	
 

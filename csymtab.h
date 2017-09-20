@@ -157,7 +157,7 @@ CSymtab()
  */
 void PopScope()
 {
-	MASSERT( table != NULL );
+	ASSERT( table != NULL );
 
 	table = table->GetPrevious();
 }	

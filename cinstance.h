@@ -47,6 +47,7 @@ class CInstance: public CDecl
 {
 private:
 public:
+	static Decl_t DeclType() { return eINSTANCE; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.

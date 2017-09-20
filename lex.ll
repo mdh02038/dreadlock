@@ -25,6 +25,8 @@
 #include "defs.h"
 #include "lex.h"
 #include "csymbol.h"
+#include "cvc.h"
+#include "cinstance.h"
 
 #define YY_DECL int yylex()
 

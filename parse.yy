@@ -38,23 +38,48 @@ extern FILE* yyin;
 void yyerror(const char* s);
 
 Coord loc;
-CSymtab<CDecl> symbolTable;
+CSymtab<CDecl> symbolTable;;
+CSymtab<CDecl> topSymbolTable = symbolTable;
 CObstack declHeapObject("declarations");
 CObstack* declHeap = &declHeapObject;
+list<CModule*> modules;
+list<CBusType*> busTypes;;
 
+template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
+    CDecl* decl = symbolTable.LookupTop(sym);	
+    if( decl && (!unique || decl->GetType() != T::DeclType() ) ) {
+        error( &loc, "Variable %s is already defined at line %lu\n", sym->GetName(), decl->GetCoord()->lineno );
+    } else {
+        decl = new(declHeap) T( sym, &loc );
+        symbolTable.Add( sym, decl );
+    }
+    return (T*)decl;
+}
 
 %}
 
 %union {
-    CSymbol* symbol;
+    CSymbol*   symbol;
+    CModule*   module;
+    CVc*       vc;
+    CBusType*  bustype;
+    CBus*      bus;
+    CInstance* instance;
     symbolpair spair;
 };
 
 %token <symbol> SYMBOL
 %token '{' '}' '.' ';' ',' BUS VC CHECK RUN MODULE ARROW IGNORE FROM
 
-%type<spair> port_spec
-%type <symbol> vc_name bus_type bus_name module_name instance_name
+%type <spair> port_spec
+%type <vc> vc_name
+%type <symbol> vc_name_ref
+%type <bustype> bus_type
+%type <symbol> bus_type_ref
+%type <module> module_name
+%type <symbol> module_name_ref
+%type <instance> instance_name 
+%type <bus> bus_name 
 
 
 %start description
@@ -70,8 +95,15 @@ statement: bus_definition
 	| module
 ;
 
-bus_definition: BUS bus_type '{' bus_statements '}'
-	{ printf( "bus %s\n", $2->GetName() ); }
+bus_definition: BUS bus_type 
+	    { symbolTable.PushScope(); }
+	'{' bus_statements '}'
+	    { 
+	      $2->Symtab( symbolTable );
+	      busTypes.push_back( $2 );
+	      symbolTable.PopScope();
+	      printf( "bus %s\n", $2->GetName() ); 
+	    }
 ;
 
 bus_statements: 
@@ -80,7 +112,7 @@ bus_statements:
 
 bus_statement: VC vc_name  ';'
     { printf( "vc %s\n", $2->GetName() ) }
-    | SYMBOL ARROW SYMBOL ';'
+    | vc_name_ref ARROW vc_name_ref ';'
 ;
 
 
@@ -88,15 +120,15 @@ port_spec:  bus_name
 	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
         | bus_name '.' '*' 
 	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
-	| bus_name '.' vc_name
+	| bus_name '.' vc_name_ref
 	{ $$.first = $1; $$.second = $3; }
 	;
 
-check_statement: CHECK module_name ';'
+check_statement: CHECK module_name_ref ';'
 	{ printf( "check %s\n", $2->GetName() ); }
 	;
 
-run_statement: RUN module_name ';'
+run_statement: RUN module_name_ref ';'
 	{ printf( "run %s\n", $2->GetName() ); }
 	;
 
@@ -112,20 +144,27 @@ port_list: port
 	| port_list ',' port
 	;
 	
-port: SYMBOL '(' ')'
-	| SYMBOL '(' SYMBOL ')'
+port: port_name '(' ')'
+	| port_name '(' bus_name ')'
 	;
 
 module_statement: 
-        module_name instance_name '(' port_list_o ')' ';'
+        module_name_ref instance_name '(' port_list_o ')' ';'
 	{ printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); }
         | port_spec ARROW port_spec ';'
 	{ printf( "rule: %s.%s -> %s.%s\n", $1.first->GetName(), $1.second->GetName(), $3.first->GetName(), $3.second->GetName() ); }
-	| IGNORE port_spec FROM module_name
+	| IGNORE port_spec FROM module_name_ref
 	;
 
-module: MODULE module_name '(' port_decl_list_o ')' '{' module_statements '}'
-	{ printf( "module %s\n", $2->GetName() ); }
+module: MODULE module_name 
+	    { symbolTable.PushScope(); }
+	'(' port_decl_list_o ')' '{' module_statements '}'
+	    { 
+	      $2->Symtab( symbolTable );
+	      modules.push_back($2);
+	      symbolTable.PopScope();
+	      printf( "module %s\n", $2->GetName() );
+	    }
 	;
 
 port_decl_list_o: 
@@ -136,72 +175,50 @@ port_decl_list: port_decl
 	| port_decl_list ',' port_decl
 	;
 	
-port_decl: SYMBOL SYMBOL
+port_decl: bus_type_ref bus_name
 	;
 
 vc_name: SYMBOL
-    {
- 	CDecl* decl = symbolTable.LookupTop($1);	
-	if( decl && decl->GetType() != eVC ) {
-	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
-	}
-	if( !decl ) {
-	    decl = new(declHeap) CVc( $1, &loc );
-	    symbolTable.Add( $1, decl );
-	}
-    }
-    ;
+    { $$ = CreateVariable( $1, true, (CVc*)0 ) }
+
+vc_name_ref: SYMBOL
+
 bus_name: SYMBOL
-    {
- 	CDecl* decl = symbolTable.LookupTop($1);	
-	if( decl && decl->GetType() != eBUS ) {
-	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
-	}
-	if( !decl ) {
-	    decl = new(declHeap) CBus( $1, &loc );
-	    symbolTable.Add( $1, decl );
-	}
-    }
-    ;
+    { $$ = CreateVariable( $1, true, (CBus*)0 ) }
+
 bus_type: SYMBOL
-    {
- 	CDecl* decl = symbolTable.LookupTop($1);	
-	if( decl && decl->GetType() != eBUS_TYPE ) {
-	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
-	}
-	if( !decl ) {
-	    decl = new(declHeap) CBusType( $1, &loc );
-	    symbolTable.Add( $1, decl );
-	}
-    }
-    ;
+    { $$ = CreateVariable( $1, true, (CBusType*)0 ) }
+
+bus_type_ref: SYMBOL
+
 module_name: SYMBOL
-    {
- 	CDecl* decl = symbolTable.LookupTop($1);	
-	if( decl && decl->GetType() != eMODULE ) {
-	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
-	}
-	if( !decl ) {
-	    decl = new(declHeap) CModule( $1, &loc );
-	    symbolTable.Add( $1, decl );
-	}
-    }
-    ;
+    { $$ = CreateVariable( $1, true, (CModule*)0 ) }
+
+module_name_ref: SYMBOL
+
 instance_name: SYMBOL
-    {
- 	CDecl* decl = symbolTable.LookupTop($1);	
-	if( decl && decl->GetType() != eINSTANCE ) {
-	    error( &loc, "Variable %s is already defined\n", $1->GetName() );
-	}
-	if( !decl ) {
-	    decl = new(declHeap) CInstance( $1, &loc );
-	    symbolTable.Add( $1, decl );
-	}
-    }
+    { $$ = CreateVariable( $1, false, (CInstance*)0 ) }
+
+port_name: SYMBOL
     ;
 
 
 %%
+void Dump( FILE* f ) {
+    fprintf( f, "Top level symbol table\n" );
+    fprintf( f, "======================\n" );
+    symbolTable.Dump( stderr );
+
+    list<CBusType*>::iterator pbt;
+    for( pbt = busTypes.begin(); pbt != busTypes.end(); ++pbt ) {
+         (*pbt)->Dump( f );
+    }
+
+    list<CModule*>::iterator pm;
+    for( pm = modules.begin(); pm != modules.end(); ++pm ) {
+         (*pm)->Dump( f );
+    }
+}
 int parse( const char* filename ) {
 	yyin = fopen( filename, "r" );
 	if( !yyin ) {
@@ -215,7 +232,7 @@ int parse( const char* filename ) {
 	} while(!feof(yyin));
         fclose( yyin );
 	yyin = NULL;
-	symbolTable.Dump( stderr );
+	Dump( stderr );
 	return 0;
 }
 void yyerror(const char* s) {

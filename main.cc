@@ -33,6 +33,9 @@ int parse( const char* );
 vector<string> fileList;
 CObstack permStack("permStack");	// used for symbols
 
+extern unsigned long errorCount;
+extern unsigned long warningCount;
+
 #define DREADLOCK "Dreadlock"
 #define VERSION "0.0.1"
 
@@ -104,5 +107,9 @@ int main( int argc, const char** argv ) {
     CSymbol::SetObstack( &permStack );
     ParseArguments( argc, argv );
     for_each( fileList.begin(), fileList.end(), ParseFile() );
+    fprintf( stderr, " Warnings: %lu, Errors: %lu\n", warningCount, errorCount );
+    if( errorCount > 0 ) {
+	exit(1);
+    }
 }
 

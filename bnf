@@ -47,4 +47,7 @@ configuration_statement: CONFIG config_name { (unit_instance | connect_statement
 check_statement: CHECK config_name
 run_statement: RUN config_name
 
-
+symbol table namespaces
+- top: all modules and busses, options/variables
+- per module: ports, bus instances, module instances
+- 
