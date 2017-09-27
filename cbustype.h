@@ -31,9 +31,11 @@
 #define CBUSTYPE_H
 
 #include <stdio.h>
+#include <list>
 #include "defs.h"
 #include "cdecl.h"
 #include "csymtab.h"
+#include "cvc.h"
 
 
 
@@ -48,6 +50,7 @@ class CBusType: public CDecl
 {
 private:
     CSymtab<CDecl> symtab;
+    list<CVc*>     vcs;
 public:
 	static Decl_t DeclType() { return eBUS_TYPE; };
 	/**
@@ -58,6 +61,8 @@ public:
  	 * \param undefined non-zero if register is undefined in source.
  	 */
 	CBusType( CSymbol* symbol, Coord* aLoc );
+	void Add( CVc *vc ) { vcs.push_back( vc ); }
+	list<CVc*>& VcList () { return vcs; }
 	/** 
 	 * Set symbol table
 	 * \param symtab symbol table

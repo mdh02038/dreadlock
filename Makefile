@@ -22,5 +22,5 @@ dreadlock: lex.yy.cc parse.tab.cc parse.tab.hh $(CFILES)
 	gcc -o dreadlock $(CFILES) parse.tab.cc lex.yy.cc -lstdc++
 
 clean:
-	@rm -f dreadlock parse.tab.cc lex.yy.cc parse.tab.hh
+	@rm -f dreadlock parse.tab.cc lex.yy.cc parse.tab.hh parse.output
 

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include "main.h"
 #include "cobstack.h"
 #include "csymbol.h"
 
@@ -32,6 +33,9 @@ int parse( const char* );
 
 vector<string> fileList;
 CObstack permStack("permStack");	// used for symbols
+bool dumpModel = false;
+CModel model;
+CSymtab<CDecl> symbolTable;;
 
 extern unsigned long errorCount;
 extern unsigned long warningCount;
@@ -61,6 +65,7 @@ void PrintUsage( void )
     printf( "Options:\n" );
     printf( " --version                  Print version\n" );
     printf( " --help                     This message\n" );
+    printf( " --dump                     Dump model\n" );
 }
 
 /*************************************************
@@ -83,6 +88,9 @@ void	ParseArguments( int argc, const char** argv )
             } else if( !strcmp( &argv[i][1], "-help" ) ) {
                 PrintUsage();
                 exit(0);
+            } else if( !strcmp( &argv[i][1], "-dump" ) ) {
+                dumpModel = true;
+		break;
             } else {
 		PrintUsage();
 		exit(1);
@@ -95,6 +103,10 @@ void	ParseArguments( int argc, const char** argv )
     }
 }
 
+void Dump( FILE* f ) {
+    model.Dump( f );
+}
+
 struct ParseFile {
     ParseFile() {}
     void operator()( const string &s ) {
@@ -105,8 +117,12 @@ struct ParseFile {
 
 int main( int argc, const char** argv ) {
     CSymbol::SetObstack( &permStack );
+    model.Add( symbolTable );
     ParseArguments( argc, argv );
     for_each( fileList.begin(), fileList.end(), ParseFile() );
+    if( dumpModel ) {
+	Dump( stderr );
+    }
     fprintf( stderr, " Warnings: %lu, Errors: %lu\n", warningCount, errorCount );
     if( errorCount > 0 ) {
 	exit(1);

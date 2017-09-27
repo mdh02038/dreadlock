@@ -19,6 +19,7 @@
  *****************************************************************************
  */
 %{
+#include "main.h"
 #include "defs.h"
 #include "lex.h"
 #include "cobstack.h"
@@ -38,12 +39,12 @@ extern FILE* yyin;
 void yyerror(const char* s);
 
 Coord loc;
-CSymtab<CDecl> symbolTable;;
-CSymtab<CDecl> topSymbolTable = symbolTable;
 CObstack declHeapObject("declarations");
 CObstack* declHeap = &declHeapObject;
 list<CModule*> modules;
-list<CBusType*> busTypes;;
+CBusType* currentBusType = NULL;
+CModule*  currentModule = NULL;
+CSymtab<CDecl> topSymbolTable = symbolTable;
 
 template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
     CDecl* decl = symbolTable.LookupTop(sym);	
@@ -96,11 +97,14 @@ statement: bus_definition
 ;
 
 bus_definition: BUS bus_type 
-	    { symbolTable.PushScope(); }
+	    { 
+	       symbolTable.PushScope(); 
+	       currentBusType = $2;
+            }
 	'{' bus_statements '}'
 	    { 
 	      $2->Symtab( symbolTable );
-	      busTypes.push_back( $2 );
+	      model.Add( $2 );
 	      symbolTable.PopScope();
 	      printf( "bus %s\n", $2->GetName() ); 
 	    }
@@ -111,7 +115,10 @@ bus_statements:
 ;
 
 bus_statement: VC vc_name  ';'
-    { printf( "vc %s\n", $2->GetName() ) }
+    { 
+	currentBusType->Add( $2 );
+	printf( "vc %s\n", $2->GetName() ); 
+    }
     | vc_name_ref ARROW vc_name_ref ';'
 ;
 
@@ -150,18 +157,25 @@ port: port_name '(' ')'
 
 module_statement: 
         module_name_ref instance_name '(' port_list_o ')' ';'
-	{ printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); }
+	{ 
+	    currentModule->Add( $2 );
+	    $2->ModuleName( $1 );
+	    printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); 
+	}
         | port_spec ARROW port_spec ';'
 	{ printf( "rule: %s.%s -> %s.%s\n", $1.first->GetName(), $1.second->GetName(), $3.first->GetName(), $3.second->GetName() ); }
 	| IGNORE port_spec FROM module_name_ref
 	;
 
 module: MODULE module_name 
-	    { symbolTable.PushScope(); }
+	    { 
+		currentModule = $2;
+		symbolTable.PushScope(); 
+	    }
 	'(' port_decl_list_o ')' '{' module_statements '}'
 	    { 
 	      $2->Symtab( symbolTable );
-	      modules.push_back($2);
+	      model.Add($2);
 	      symbolTable.PopScope();
 	      printf( "module %s\n", $2->GetName() );
 	    }
@@ -179,46 +193,31 @@ port_decl: bus_type_ref bus_name
 	;
 
 vc_name: SYMBOL
-    { $$ = CreateVariable( $1, true, (CVc*)0 ) }
+    { $$ = CreateVariable( $1, true, (CVc*)0 ); }
 
 vc_name_ref: SYMBOL
 
 bus_name: SYMBOL
-    { $$ = CreateVariable( $1, true, (CBus*)0 ) }
+    { $$ = CreateVariable( $1, true, (CBus*)0 ); }
 
 bus_type: SYMBOL
-    { $$ = CreateVariable( $1, true, (CBusType*)0 ) }
+    { $$ = CreateVariable( $1, true, (CBusType*)0 ); }
 
 bus_type_ref: SYMBOL
 
 module_name: SYMBOL
-    { $$ = CreateVariable( $1, true, (CModule*)0 ) }
+    { $$ = CreateVariable( $1, true, (CModule*)0 ); }
 
 module_name_ref: SYMBOL
 
 instance_name: SYMBOL
-    { $$ = CreateVariable( $1, false, (CInstance*)0 ) }
+    { $$ = CreateVariable( $1, false, (CInstance*)0 ); }
 
 port_name: SYMBOL
     ;
 
 
 %%
-void Dump( FILE* f ) {
-    fprintf( f, "Top level symbol table\n" );
-    fprintf( f, "======================\n" );
-    symbolTable.Dump( stderr );
-
-    list<CBusType*>::iterator pbt;
-    for( pbt = busTypes.begin(); pbt != busTypes.end(); ++pbt ) {
-         (*pbt)->Dump( f );
-    }
-
-    list<CModule*>::iterator pm;
-    for( pm = modules.begin(); pm != modules.end(); ++pm ) {
-         (*pm)->Dump( f );
-    }
-}
 int parse( const char* filename ) {
 	yyin = fopen( filename, "r" );
 	if( !yyin ) {
@@ -232,7 +231,6 @@ int parse( const char* filename ) {
 	} while(!feof(yyin));
         fclose( yyin );
 	yyin = NULL;
-	Dump( stderr );
 	return 0;
 }
 void yyerror(const char* s) {

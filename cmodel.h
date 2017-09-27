@@ -21,73 +21,66 @@
 /******************************************************************************
  *
  *
- *	   cinstance.hpp
- *		- class definition for instance
+ *	   model.h
+ *		- class definition of model
  *
  ******************************************************************************
  */
 
-#ifndef CINSTANCE_H
-#define CINSTANCE_H
+#ifndef MODEL_H
+#define MODEL_H
 
 #include <stdio.h>
-#include <string>
+#include <algorithm>
+#include <list>
 #include "defs.h"
 #include "cdecl.h"
+#include "cbustype.h"
+#include "cmodule.h"
 
-class CModule;
-
-
-/*
- * handle variable declarations
- */
 
 /**
  * Declaration object for variables.
  */
-class CInstance: public CDecl
-{
+class CModel {
 private:
-    CSymbol*  moduleName; // module type name
+    list<CBusType*> busses;
+    list<CModule*>  modules;
+    CSymtab<CDecl>  symtab;
 public:
-	static Decl_t DeclType() { return eINSTANCE; };
-	/**
- 	 * Create a register declaration.
- 	 * \param symbol declaration symbol.
- 	 * \param aLoc file coordinates.
- 	 * \param dataType variable data type.
- 	 * \param undefined non-zero if register is undefined in source.
- 	 */
-	CInstance( CSymbol* symbol, Coord* aLoc );
-	/**
- 	 * Create a clone of this declaration.
- 	 * \param heap heap to use for allocation.
- 	 * \return new declaration.
- 	 */
-	virtual CDecl* Clone( CObstack* heap );
 	/*
-	 * set module type
-	 */
-	void ModuleName( CSymbol* name ) { moduleName = name; }
-	/*
-	 * get module type
-	 */
-	CSymbol*  ModuleName() { return moduleName; }
-	/**
- 	 * Dump Bus info to file.
- 	 * \param f file descriptor.
+ 	 * constructor.
  	 */
-	virtual void Dump( FILE* f );
-protected:
+	CModel() {}
 	/*
- 	 * Deep Copy.
+ 	 * add bus to model
  	 */
-	void Copy( CObstack* heap, CInstance& var );
-private:
+	void Add( CBusType* bus ) { busses.push_back( bus ); }
 	/*
- 	 * Disable copy constructor.
+ 	 * add module to model
  	 */
-	CInstance( const CInstance& bus );
+	void Add( CModule* module ) { modules.push_back( module ); }
+	/*
+ 	 * add symbol table to model
+ 	 */
+	void Add( CSymtab<CDecl> symtab ) { this->symtab = symtab; }
+	/*
+ 	 * dump model to file
+ 	 */
+	void Dump( FILE* f )
+	{
+	    fprintf( f, "Symbol Table:\n" );
+            symtab.Dump( f );
+	    list<CBusType*>::iterator btp;
+	    for( btp=busses.begin(); btp!=busses.end(); ++btp ) {
+		(*btp)->Dump( f );
+	    }
+	    list<CModule*>::iterator mp;
+	    for( mp=modules.begin(); mp!=modules.end(); ++mp ) {
+		(*mp)->Dump( f );
+	    }
+	}
 };
 
-#endif // CVC_H
+#endif // MODEL_H
+

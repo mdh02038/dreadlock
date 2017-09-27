@@ -71,5 +71,9 @@ void	CBusType::Dump( FILE* f )
     CDecl::Dump( f );
     fprintf( f, "\n" );
     symtab.Dump( f, 0 );
+    list<CVc*>::iterator pvc;
+    for( pvc = vcs.begin(); pvc != vcs.end(); ++pvc ) {
+	fprintf( f, "\t" ); (*pvc)->Dump( f );
+    }
 }	
 

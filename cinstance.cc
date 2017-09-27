@@ -28,6 +28,7 @@
  */
 
 #include "cinstance.h"
+#include "cmodule.h"
 
 
 
@@ -65,8 +66,8 @@ void CInstance::Copy( CObstack* heap, CInstance& bus )
 *****************************************************/
 void	CInstance::Dump( FILE* f )
 {
-    fprintf( f, "%s ", declName[GetType()] );
-    fprintf( f, ": %s, defined in ", GetName() ); 
+    fprintf( f, "%s ", declName[GetType()] ); 
+    fprintf( f, ": %s, of module %s, defined in ", ModuleName()->GetName(), GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
 }	

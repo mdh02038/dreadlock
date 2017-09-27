@@ -34,6 +34,7 @@
 #include "defs.h"
 #include "cdecl.h"
 #include "csymtab.h"
+#include "cinstance.h"
 
 
 
@@ -48,7 +49,8 @@
 class CModule: public CDecl
 {
 private:
-    CSymtab<CDecl> symtab;
+    CSymtab<CDecl>   symtab;
+    list<CInstance*> instances;
 public:
 	static Decl_t DeclType() { return eMODULE; };
 	/**
@@ -75,6 +77,10 @@ public:
  	 * \return new declaration.
  	 */
 	virtual CDecl* Clone( CObstack* heap );
+        /**
+	 * Add instance to module
+	 */
+	void Add( CInstance* instance ) { instances.push_back( instance ); }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.
@@ -91,4 +97,4 @@ private:
  	 */
 	CModule( const CModule& bus );
 };
-#endif // CVC_H
+#endif // CMODULE_H
