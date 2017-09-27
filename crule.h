@@ -18,60 +18,44 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
+/******************************************************************************
+ *
+ *
+ *	   crule.h
+ *		- class definition for dependency rules
+ *
+ *
+ ******************************************************************************
+ */
 
-%{
-#include <stdio.h>
-#include "defs.h"
-#include "lex.h"
-#include "csymbol.h"
+#ifndef CRULE_H
+#define CRULE_H
 
-class CVc;
-class CVcRef;
-class CInstance;
-
-#define YY_DECL int yylex()
-
-#include "parse.tab.hh"
-extern Coord loc;
-
-#define NEW_LINE	loc.lineno++;
-
-%}
-
-%x COMMENT
-
-%%
+#include "cvcref.h"
 
 
-[ \t\f\r]	; // ignore all whitespace
+class CRule : public CObject
+{
+private:
+	Coord	   loc;		  ///< file coordinates of declaration
+	CVcRef*	   lhs;
+	CVcRef*	   rhs;
+public:
+	/*
+	 * constructor
+	 */
+	CRule( CVcRef* lhs, CVcRef* rhs, Coord* loc ) :
+		loc(*loc), lhs(lhs), rhs(rhs) {}
+        CVcRef* LHS() { return lhs; }
+        CVcRef* RHS() { return rhs; }
+	void Dump( FILE* f ) {
+	    fprintf( f, "rule: " );
+	    lhs->Dump( f );
+	    fprintf( f, " -> " );
+	    rhs->Dump( f );
+	    fprintf( f, ": defined in '%s' line %lu\n", loc.filename.c_str() , loc.lineno );
+	}
+};
 
-"vc"		{return VC;}
-"bus"		{return BUS;}
-"check"		{return CHECK;}
-"run"		{return RUN;}
-"module"	{return MODULE;}
-"ignore"	{return IGNORE;}
-"from"		{return FROM;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-","		{return ',';}
-"("		{return '(';}
-")"		{return ')';}
-";"		{return ';';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-.		{ return yytext[0]; } 
-
-
-%%
+#endif // CRULE_H
 

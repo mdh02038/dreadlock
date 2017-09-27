@@ -18,60 +18,40 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
+/******************************************************************************
+ *
+ *
+ *	   cvcref.h
+ *		- class definition for references to vc's
+ *
+ *
+ ******************************************************************************
+ */
 
-%{
-#include <stdio.h>
-#include "defs.h"
-#include "lex.h"
+#ifndef CVCREF_H
+#define CVCREF_H
+
 #include "csymbol.h"
 
-class CVc;
-class CVcRef;
-class CInstance;
 
-#define YY_DECL int yylex()
+class CVcRef : public CObject
+{
+private:
+	Coord	   loc;		  ///< file coordinates of declaration
+	CSymbol*   bus;	  	  ///< symbol for bus (may be *)
+	CSymbol*   vc;	  	  ///< symbol for vc
+public:
+	/*
+	 * constructor
+	 */
+	CVcRef( CSymbol* bus, CSymbol* vc, Coord* loc ) :
+		loc(*loc), bus(bus), vc(vc) {}
+        CSymbol* Bus() { return bus; }
+        CSymbol* Vc() { return vc; }
+	void Dump( FILE* f ) {
+	    fprintf( f, "%s.%s", bus->GetName(), vc->GetName() );
+	}
+};
 
-#include "parse.tab.hh"
-extern Coord loc;
-
-#define NEW_LINE	loc.lineno++;
-
-%}
-
-%x COMMENT
-
-%%
-
-
-[ \t\f\r]	; // ignore all whitespace
-
-"vc"		{return VC;}
-"bus"		{return BUS;}
-"check"		{return CHECK;}
-"run"		{return RUN;}
-"module"	{return MODULE;}
-"ignore"	{return IGNORE;}
-"from"		{return FROM;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-","		{return ',';}
-"("		{return '(';}
-")"		{return ')';}
-";"		{return ';';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-.		{ return yytext[0]; } 
-
-
-%%
+#endif // CVCREF_H
 

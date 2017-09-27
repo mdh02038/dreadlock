@@ -35,6 +35,8 @@
 #include "cdecl.h"
 #include "csymtab.h"
 #include "cinstance.h"
+#include "crule.h"
+#include "cexception.h"
 
 
 
@@ -51,6 +53,8 @@ class CModule: public CDecl
 private:
     CSymtab<CDecl>   symtab;
     list<CInstance*> instances;
+    list<CRule*>    rules;
+    list<CException*>    exceptions;
 public:
 	static Decl_t DeclType() { return eMODULE; };
 	/**
@@ -81,6 +85,14 @@ public:
 	 * Add instance to module
 	 */
 	void Add( CInstance* instance ) { instances.push_back( instance ); }
+        /**
+	 * Add exception to module
+	 */
+	void Add( CException* e ) { exceptions.push_back( e ); }
+	/*
+	 * add rule
+	 */
+	void Add( CRule* rule ) { rules.push_back( rule ); }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

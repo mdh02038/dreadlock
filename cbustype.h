@@ -38,6 +38,7 @@
 #include "cvc.h"
 
 
+class CRule;
 
 /*
  * handle variable declarations
@@ -51,6 +52,7 @@ class CBusType: public CDecl
 private:
     CSymtab<CDecl> symtab;
     list<CVc*>     vcs;
+    list<CRule*>   rules;
 public:
 	static Decl_t DeclType() { return eBUS_TYPE; };
 	/**
@@ -63,6 +65,8 @@ public:
 	CBusType( CSymbol* symbol, Coord* aLoc );
 	void Add( CVc *vc ) { vcs.push_back( vc ); }
 	list<CVc*>& VcList () { return vcs; }
+	void Add( CRule *rule ) { rules.push_back( rule ); }
+	list<CRule*>& Rules() { return rules; }
 	/** 
 	 * Set symbol table
 	 * \param symtab symbol table

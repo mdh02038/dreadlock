@@ -28,6 +28,7 @@
  */
 
 #include "cbustype.h"
+#include "crule.h"
 
 
 
@@ -74,6 +75,10 @@ void	CBusType::Dump( FILE* f )
     list<CVc*>::iterator pvc;
     for( pvc = vcs.begin(); pvc != vcs.end(); ++pvc ) {
 	fprintf( f, "\t" ); (*pvc)->Dump( f );
+    }
+    list<CRule*>::iterator pr;
+    for( pr = rules.begin(); pr != rules.end(); ++pr ) {
+	fprintf( f, "\t" ); (*pr)->Dump( f );
     }
 }	
 

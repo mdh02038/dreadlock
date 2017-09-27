@@ -76,5 +76,13 @@ void	CModule::Dump( FILE* f )
     for( pin = instances.begin(); pin != instances.end(); ++pin ) {
 	fprintf( f, "\t" ); (*pin)->Dump( f );
     }
+    list<CRule*>::iterator pr;
+    for( pr = rules.begin(); pr != rules.end(); ++pr ) {
+	fprintf( f, "\t" ); (*pr)->Dump( f );
+    }
+    list<CException*>::iterator  pe;
+    for( pe = exceptions.begin(); pe != exceptions.end(); ++pe ) {
+	fprintf( f, "\t" ); (*pe)->Dump( f );
+    }
 }	
 

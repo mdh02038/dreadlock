@@ -47,6 +47,8 @@ private:
     list<CBusType*> busses;
     list<CModule*>  modules;
     CSymtab<CDecl>  symtab;
+    list<CSymbol*>  runs;
+    list<CSymbol*>  checks;
 public:
 	/*
  	 * constructor.
@@ -65,6 +67,14 @@ public:
  	 */
 	void Add( CSymtab<CDecl> symtab ) { this->symtab = symtab; }
 	/*
+ 	 * add check to model
+ 	 */
+	void Check( CSymbol* name ) { checks.push_back( name ); }
+	/*
+ 	 * add run to model
+ 	 */
+	void Run( CSymbol* name ) { runs.push_back( name ); }
+	/*
  	 * dump model to file
  	 */
 	void Dump( FILE* f )
@@ -78,6 +88,14 @@ public:
 	    list<CModule*>::iterator mp;
 	    for( mp=modules.begin(); mp!=modules.end(); ++mp ) {
 		(*mp)->Dump( f );
+	    }
+	    list<CSymbol*>::iterator cp;
+	    for( cp=checks.begin(); cp!=checks.end(); ++cp ) {
+		fprintf( f, "check: %s\n", (*cp)->GetName() );
+	    }
+	    list<CSymbol*>::iterator rp;
+	    for( rp=runs.begin(); rp!=runs.end(); ++rp ) {
+		fprintf( f, "run: %s\n", (*rp)->GetName() );
 	    }
 	}
 };

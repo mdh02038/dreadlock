@@ -18,60 +18,43 @@
  * Boston, MA  02110-1301  USA
  *****************************************************************************
  */
-%option noyywrap
+/******************************************************************************
+ *
+ *
+ *	   crule.h
+ *		- class definition for dependency rules
+ *
+ *
+ ******************************************************************************
+ */
 
-%{
-#include <stdio.h>
-#include "defs.h"
-#include "lex.h"
-#include "csymbol.h"
+#ifndef CEXCEPTION_H
+#define CEXCEPTION_H
 
-class CVc;
-class CVcRef;
-class CInstance;
-
-#define YY_DECL int yylex()
-
-#include "parse.tab.hh"
-extern Coord loc;
-
-#define NEW_LINE	loc.lineno++;
-
-%}
-
-%x COMMENT
-
-%%
+#include "cvcref.h"
 
 
-[ \t\f\r]	; // ignore all whitespace
+class CException : public CObject
+{
+private:
+	Coord	   loc;		  ///< file coordinates of declaration
+	CVcRef*	   port; 
+	CSymbol*   moduleName;
+public:
+	/*
+	 * constructor
+	 */
+	CException( CVcRef* port, CSymbol* moduleName, Coord* loc ) :
+		loc(*loc), port(port), moduleName(moduleName) {}
+        CVcRef* Port() { return port; }
+        CSymbol* ModuleName() { return moduleName; }
+	void Dump( FILE* f ) {
+	    fprintf( f, "exception: ignore " );
+	    port->Dump( f );
+	    fprintf( f, " from %s", moduleName->GetName() );
+	    fprintf( f, ": defined in '%s' line %lu\n", loc.filename.c_str() , loc.lineno );
+	}
+};
 
-"vc"		{return VC;}
-"bus"		{return BUS;}
-"check"		{return CHECK;}
-"run"		{return RUN;}
-"module"	{return MODULE;}
-"ignore"	{return IGNORE;}
-"from"		{return FROM;}
-"{"		{return '{';}
-"}"		{return '}';}
-"."		{return '.';}
-","		{return ',';}
-"("		{return '(';}
-")"		{return ')';}
-";"		{return ';';}
-"*"		{return '*';}
-"->"		{return ARROW;}
-"//".*		{}
-[a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
-"/*"		{ BEGIN COMMENT; }
-<COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
-<COMMENT>"*"+"/"	{ BEGIN INITIAL; }
-\n		{ yymore(); NEW_LINE; }
-.		{ return yytext[0]; } 
-
-
-%%
+#endif // CEXCEPTION_H
 

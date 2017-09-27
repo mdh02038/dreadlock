@@ -31,6 +31,9 @@
 #include "cbustype.h"
 #include "cmodule.h"
 #include "cinstance.h"
+#include "cvcref.h"
+#include "crule.h"
+#include "cexception.h"
 
 
 extern int yylex();
@@ -45,6 +48,7 @@ list<CModule*> modules;
 CBusType* currentBusType = NULL;
 CModule*  currentModule = NULL;
 CSymtab<CDecl> topSymbolTable = symbolTable;
+
 
 template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
     CDecl* decl = symbolTable.LookupTop(sym);	
@@ -67,12 +71,13 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
     CBus*      bus;
     CInstance* instance;
     symbolpair spair;
+    CVcRef*    vcref;
 };
 
 %token <symbol> SYMBOL
 %token '{' '}' '.' ';' ',' BUS VC CHECK RUN MODULE ARROW IGNORE FROM
 
-%type <spair> port_spec
+%type <vcref> port_spec
 %type <vc> vc_name
 %type <symbol> vc_name_ref
 %type <bustype> bus_type
@@ -81,6 +86,7 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
 %type <symbol> module_name_ref
 %type <instance> instance_name 
 %type <bus> bus_name 
+%type <symbol> bus_name_ref 
 
 
 %start description
@@ -120,23 +126,29 @@ bus_statement: VC vc_name  ';'
 	printf( "vc %s\n", $2->GetName() ); 
     }
     | vc_name_ref ARROW vc_name_ref ';'
+    {
+	CVcRef* lhs = new(declHeap) CVcRef( CSymbol::Lookup("*"), $1,  &loc );
+	CVcRef* rhs = new(declHeap) CVcRef( CSymbol::Lookup("*"), $3,  &loc );
+        CRule* r = new(declHeap) CRule( lhs, rhs, &loc );
+        currentBusType->Add( r );
+    }
 ;
 
 
-port_spec:  bus_name
-	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
-        | bus_name '.' '*' 
-	{ $$.first = $1; $$.second = CSymbol::Lookup("*"); }
-	| bus_name '.' vc_name_ref
-	{ $$.first = $1; $$.second = $3; }
-	;
+port_spec:  bus_name_ref
+	{ $$ = new(declHeap) CVcRef( $1, CSymbol::Lookup("*"), &loc ); }
+        | bus_name_ref '.' '*' 
+	{ $$ = new(declHeap) CVcRef( $1, CSymbol::Lookup("*"), &loc ); }
+	| bus_name_ref '.' vc_name_ref
+	{ $$ = new(declHeap) CVcRef( $1, $3, &loc ); }
+	;	
 
 check_statement: CHECK module_name_ref ';'
-	{ printf( "check %s\n", $2->GetName() ); }
+	{ model.Check( $2 ); }
 	;
 
 run_statement: RUN module_name_ref ';'
-	{ printf( "run %s\n", $2->GetName() ); }
+	{ model.Run( $2 ); }
 	;
 
 module_statements:
@@ -163,8 +175,16 @@ module_statement:
 	    printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); 
 	}
         | port_spec ARROW port_spec ';'
-	{ printf( "rule: %s.%s -> %s.%s\n", $1.first->GetName(), $1.second->GetName(), $3.first->GetName(), $3.second->GetName() ); }
+	{ 
+	    CRule* r = new(declHeap) CRule( $1, $3, &loc );
+	    currentModule->Add( r );
+	}
 	| IGNORE port_spec FROM module_name_ref
+        {
+	    CException* e = new(declHeap) CException( $2, $4, &loc );
+	    currentModule->Add( e );
+		
+	}
 	;
 
 module: MODULE module_name 
@@ -199,6 +219,8 @@ vc_name_ref: SYMBOL
 
 bus_name: SYMBOL
     { $$ = CreateVariable( $1, true, (CBus*)0 ); }
+
+bus_name_ref: SYMBOL
 
 bus_type: SYMBOL
     { $$ = CreateVariable( $1, true, (CBusType*)0 ); }
