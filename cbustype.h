@@ -64,7 +64,7 @@ public:
  	 */
 	CBusType( CSymbol* symbol, Coord* aLoc );
 	void Add( CVc *vc ) { vcs.push_back( vc ); }
-	list<CVc*>& VcList () { return vcs; }
+	const list<CVc*>& Vcs () { return vcs; }
 	void Add( CRule *rule ) { rules.push_back( rule ); }
 	list<CRule*>& Rules() { return rules; }
 	/** 

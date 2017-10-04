@@ -121,11 +121,12 @@ int main( int argc, const char** argv ) {
     model.Add( symbolTable );
     ParseArguments( argc, argv );
     for_each( fileList.begin(), fileList.end(), ParseFile() );
+
+    model.Build();
+
     if( dumpModel ) {
 	Dump( stderr );
     }
-
-    model.Validate();
 
     fprintf( stderr, " Warnings: %lu, Errors: %lu\n", warningCount, errorCount );
     if( errorCount > 0 ) {

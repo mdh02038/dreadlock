@@ -47,7 +47,7 @@ class CBusType;
 class CBus: public CDecl
 {
 private:
-    CBusType* busType;
+    CSymbol*  busType;
     bool      isPort;
 public:
 	static Decl_t DeclType() { return eBUS; };
@@ -62,11 +62,11 @@ public:
 	/*
          * Set bus type
 	 */
-        void BusType( CBusType* bt ) { busType = bt; }
+        void BusType( CSymbol* bt ) { busType = bt; }
 	/*
          * Get bus type
 	 */
-        CBusType* BusType() { return busType; }
+        CSymbol* BusType() { return busType; }
 	/*
          * Mark as port
 	 */

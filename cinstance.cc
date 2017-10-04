@@ -68,7 +68,7 @@ void CInstance::Copy( CObstack* heap, CInstance& bus )
 void	CInstance::Dump( FILE* f )
 {
     fprintf( f, "%s ", declName[GetType()] ); 
-    fprintf( f, ": %s, of module %s, defined in ", ModuleName()->GetName(), GetName() ); 
+    fprintf( f, ": %s, of module %s, defined in ", GetName(), ModuleName()->GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
     list<CPortConn*>::iterator ppc;

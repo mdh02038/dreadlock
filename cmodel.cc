@@ -28,13 +28,15 @@
  */
 
 #include "cmodel.h"
+#include "cbus.h"
 
 
+extern CObstack* declHeap;
 
 /*
- * validate model
+ * build model
  */
-void CModel::Validate()
+void CModel::Build()
 {
 	// bus rule references
 	// model rule references
@@ -48,6 +50,11 @@ void CModel::Validate()
 	// non-point to point connections
 	// instance refs use valid models
 
+	// collect top level models
+        topLevelModules = CollectTopLevelModules();	
+
+        // flatten model extract instances
+	instances = FlattenAndExtractInstances( topLevelModules );
 }
 
 /*
@@ -61,8 +68,12 @@ void CModel::Dump( FILE* f )
     for( btp=busses.begin(); btp!=busses.end(); ++btp ) {
 	(*btp)->Dump( f );
     }
+    set<CModule*> topSet(topLevelModules.begin(), topLevelModules.end());
     list<CModule*>::iterator mp;
     for( mp=modules.begin(); mp!=modules.end(); ++mp ) {
+	if( topSet.count(*mp) > 0 ) {
+	    fprintf( f, "#" );
+	}
 	(*mp)->Dump( f );
     }
     list<CSymbol*>::iterator cp;
@@ -72,6 +83,10 @@ void CModel::Dump( FILE* f )
     list<CSymbol*>::iterator rp;
     for( rp=runs.begin(); rp!=runs.end(); ++rp ) {
 	fprintf( f, "run: %s\n", (*rp)->GetName() );
+    }
+    list<CInstance*>::iterator ip;
+    for( ip=instances.begin(); ip!=instances.end(); ++ip ) {
+	(*ip)->Dump( f );
     }
 }
 
@@ -164,8 +179,36 @@ void CModel::DumpAlloy( FILE* f )
     fprintf( f, " extends Unit {}\n" );
 
     /*
-     * dump module wire sigs
+     * dump instance wire sigs
      */
+    string directions[2] = { "IN", "OUT" };
+    list<CInstance*>::const_iterator ip;
+    for( ip = instances.begin(); ip != instances.end(); ++ip ) {
+	CDecl* d = symtab.Lookup( (*ip)->ModuleName() );
+	ASSERT( d );
+	ASSERT( d->GetType() == eMODULE );
+	CModule* m = (CModule*)d;
+	string instanceName = (*ip)->GetName();
+        fprintf( f, "\n// %s \n", instanceName.c_str() );
+	list<CBus*>::const_iterator bp;
+	for( bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
+	    string busName = (*bp)->GetName();
+	    CDecl* d = symtab.Lookup( (*bp)->BusType() );
+	    ASSERT( d );
+	    ASSERT( d->GetType() == eBUS_TYPE );
+	    CBusType* busType = (CBusType*)d;
+	    list<CVc*>::const_iterator vp;
+	    for( vp = busType->Vcs().begin(); vp != busType->Vcs().end(); ++vp ) {
+	        string vcName = (*vp)->GetName();
+	        for( unsigned d = 0; d < 2; ++d ) {
+	            string direction = directions[d];
+	            string portName = instanceName + "_" + busName + "_" + vcName + "_" + direction;
+                    fprintf( f, "one sig %s extends Port {} { unit=%s bus=%s vc=%s direction=%s }\n", 
+                          portName.c_str(), instanceName.c_str(), busName.c_str(), vcName.c_str(), direction.c_str() );
+	        }
+            }
+        }
+    }
 
     /*
      * dump module rules
@@ -193,4 +236,63 @@ void CModel::DumpAlloy( FILE* f )
 	fprintf( f, "run %s { %s }\n", (*rp)->GetName(), (*rp)->GetName() );
     }
 
+}
+
+
+const list<CModule*> CModel::CollectTopLevelModules()
+{
+    map<CModule*,unsigned long> moduleCount;
+    list<CModule*>::iterator mp;
+    for( mp = modules.begin(); mp != modules.end(); ++mp ) {
+	list<CInstance*>::const_iterator ip;
+	for( ip = (*mp)->Instances().begin(); ip != (*mp)->Instances().end(); ++ip ) {
+	    CDecl* d = symtab.Lookup( (*ip)->ModuleName() );
+	    ASSERT( d );
+	    ASSERT( d->GetType() == eMODULE );
+	    CModule* m = (CModule*)d;
+	    moduleCount[m]++;
+	}
+    }
+    list<CModule*> topModules;
+    for( mp = modules.begin(); mp != modules.end(); ++mp ) {
+	if( moduleCount[*mp] == 0 ) {
+	    topModules.push_back( *mp );
+	}
+    }
+    return topModules;
+}
+
+void Elaborate( string prefix, CModule* m, list<CInstance*>& instances )
+{
+    list<CInstance*>::const_iterator ip;
+    for( ip = m->Instances().begin(); ip != m->Instances().end(); ++ip ) {
+	string moduleName = (*ip)->ModuleName()->GetName();
+	string newPrefix = prefix + "_" + moduleName;
+	CInstance* instance = new(declHeap) CInstance( CSymbol::Lookup(newPrefix.c_str()),(*ip)->GetCoord() );
+	instance->ModuleName( (*ip)->ModuleName() );
+	instances.push_back( instance );
+	// ??? mdh - need to find module decl an recurse
+    }
+}
+
+const list<CInstance*> CModel::FlattenAndExtractInstances( const list<CModule*>& modules )
+{
+    list<CInstance*> instances;
+    /*
+     * create an instance for each top level model
+     */
+    list<CModule*>::const_iterator mp;
+    for( mp = modules.begin(); mp != modules.end(); ++mp ) {
+	string moduleName = (*mp)->GetName();
+	string newPrefix = moduleName;
+	CInstance* instance = new(declHeap) CInstance( CSymbol::Lookup(newPrefix.c_str()),(*mp)->GetCoord() );
+	instance->ModuleName( (*mp)->GetSymbol() );
+	instances.push_back( instance );
+	/*
+	 * build sub instances
+	 */
+	Elaborate( newPrefix, *mp, instances );
+    }
+    
+    return instances;
 }

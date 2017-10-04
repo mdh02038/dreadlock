@@ -104,6 +104,14 @@ public:
 	 * add bus
 	 */
 	void AddBus( CBus* bus ) { busses.push_back( bus ); }
+	/*
+	 * return instance list
+	 */
+	const list<CInstance*>& Instances() { return instances; }
+	/*
+	 * return port list
+	 */
+	const list<CBus*>& Ports() { return ports; }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

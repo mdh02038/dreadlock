@@ -143,7 +143,7 @@ public:
 /**
  * hook for namespaces
  */
-static T1* Resolve( CSymbol* sym );
+//static T1* Resolve( CSymbol* sym );
 
 /**
  * Create a symbol table.
@@ -211,16 +211,16 @@ T1*	Lookup( CSymbol* sym, int skip = 0 )
 	        }
 	    }
 	}
-	if( !result ) {
-	    /*
-	     * if symbol can be resolved externally, replicate
-	     * entry with new symbol. 
-	     */
-	    result = Resolve( sym );
-	    if( result ) {
-	        Add( sym, result );
-	    }
-	}
+//	if( !result ) {
+//	    /*
+//	     * if symbol can be resolved externally, replicate
+//	     * entry with new symbol. 
+//	     */
+//	    result = Resolve( sym );
+//	    if( result ) {
+//	        Add( sym, result );
+//	    }
+//	}
 	return result;
 }
 

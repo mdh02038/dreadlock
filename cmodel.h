@@ -49,6 +49,9 @@ private:
     CSymtab<CDecl>  symtab;
     list<CSymbol*>  runs;
     list<CSymbol*>  checks;
+    // post build model structures
+    list<CModule*>  topLevelModules;
+    list<CInstance*>  instances;
 public:
 	/*
  	 * constructor.
@@ -75,9 +78,9 @@ public:
  	 */
 	void Run( CSymbol* name ) { runs.push_back( name ); }
 	/*
- 	 * validate model
+ 	 * build model
  	 */
-	void Validate();
+	void Build();
 	/*
  	 * dump alloy model to file
  	 */
@@ -86,6 +89,9 @@ public:
  	 * dump model to file
  	 */
 	void Dump( FILE* f );
+protected:
+        const list<CModule*> CollectTopLevelModules();	
+	const list<CInstance*> FlattenAndExtractInstances( const list<CModule*>& moduleList );
 };
 
 #endif // MODEL_H

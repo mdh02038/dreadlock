@@ -28,6 +28,7 @@
  */
 
 #include "cbus.h"
+#include "cbustype.h"
 
 
 
@@ -66,7 +67,7 @@ void CBus::Copy( CObstack* heap, CBus& bus )
 void	CBus::Dump( FILE* f )
 {
     fprintf( f, "%s ", isPort ? "port" : declName[GetType()] );
-    fprintf( f, ": %s, defined in ", GetName() ); 
+    fprintf( f, ": %s is type %s, defined in ", GetName(), busType->GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
 }	

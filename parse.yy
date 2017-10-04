@@ -89,6 +89,7 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
 %type <instance> instance_name 
 %type <bus> bus_name 
 %type <symbol> bus_name_ref 
+%type <symbol> bus_type_ref 
 
 
 %start description
@@ -197,7 +198,7 @@ module_statement:
 	    currentModule->Add( e );
 		
 	}
-        | bus_type ':' bus_name ';'
+        | bus_type_ref ':' bus_name ';'
         {
 	    $3->BusType( $1 );
 	    currentModule->AddBus( $3 );
@@ -225,7 +226,7 @@ port_decl_list: port_decl
 	| port_decl_list ',' port_decl
 	;
 	
-port_decl: bus_type ':' bus_name
+port_decl: bus_type_ref ':' bus_name
         {
 	    $3->BusType( $1 );
 	    $3->IsPort();
@@ -241,6 +242,8 @@ bus_name: SYMBOL
     { $$ = CreateVariable( $1, true, (CBus*)0 ); }
 
 bus_name_ref: SYMBOL
+
+bus_type_ref: SYMBOL
 
 bus_type: SYMBOL
     { $$ = CreateVariable( $1, true, (CBusType*)0 ); }
