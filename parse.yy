@@ -29,7 +29,8 @@
 #include "cvc.h"
 #include "cbus.h"
 #include "cbustype.h"
-#include "cmodule.h"
+#include "cbustype.h"
+#include "cportconn.h"
 #include "cinstance.h"
 #include "cvcref.h"
 #include "crule.h"
@@ -47,6 +48,7 @@ CObstack* declHeap = &declHeapObject;
 list<CModule*> modules;
 CBusType* currentBusType = NULL;
 CModule*  currentModule = NULL;
+CInstance*  currentInstance = NULL;
 CSymtab<CDecl> topSymbolTable = symbolTable;
 
 
@@ -79,6 +81,7 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
 
 %type <vcref> port_spec
 %type <vc> vc_name
+%type <symbol> port_name
 %type <symbol> vc_name_ref
 %type <bustype> bus_type
 %type <module> module_name
@@ -161,14 +164,27 @@ port_list: port
 	;
 	
 port: port_name '(' ')'
-	| port_name '(' bus_name ')'
+        {
+	    CPortConn* pc = new(declHeap) CPortConn( $1, CSymbol::Lookup(""), &loc );
+	    currentInstance->Add( pc );
+	} 
+	| port_name '(' bus_name_ref ')'
+        {
+	    CPortConn* pc = new(declHeap) CPortConn( $1, $3, &loc );
+	    currentInstance->Add( pc );
+	} 
 	;
 
 module_statement: 
-        module_name_ref instance_name '(' port_list_o ')' ';'
+        module_name_ref instance_name 
 	{ 
-	    currentModule->Add( $2 );
 	    $2->ModuleName( $1 );
+	    currentModule->Add( $2 );
+ 	    currentInstance = $2;
+	}
+	'(' port_list_o ')' ';'
+	{ 
+	    currentInstance = NULL;
 	}
         | port_spec ARROW port_spec ';'
 	{ 

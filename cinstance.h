@@ -36,6 +36,7 @@
 #include "cdecl.h"
 
 class CModule;
+class CPortConn;
 
 
 /*
@@ -49,6 +50,7 @@ class CInstance: public CDecl
 {
 private:
     CSymbol*  moduleName; // module type name
+    list<CPortConn*> portConnections;
 public:
 	static Decl_t DeclType() { return eINSTANCE; };
 	/**
@@ -69,6 +71,10 @@ public:
 	 * set module type
 	 */
 	void ModuleName( CSymbol* name ) { moduleName = name; }
+        /*
+	 * add port connections
+	 */
+        void Add( CPortConn* pc ) { portConnections.push_back( pc ); }
 	/*
 	 * get module type
 	 */

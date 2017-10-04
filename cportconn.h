@@ -21,14 +21,14 @@
 /******************************************************************************
  *
  *
- *	   cport.hpp
- *		- class definition of port declaration
+ *	   cportconn.hpp
+ *		- class definition of portconn declaration
  *
  ******************************************************************************
  */
 
-#ifndef CPORT_H
-#define CPORT_H
+#ifndef CPORTCONN_H
+#define CPORTCONN_H
 
 #include <stdio.h>
 #include "defs.h"
@@ -43,11 +43,12 @@
 /**
  * Declaration object for variables.
  */
-class CPort: public CDecl
+class CPortConn: public CDecl
 {
 private:
+    CSymbol* external;
 public:
-	static Decl_t DeclType() { return ePORT; };
+	static Decl_t DeclType() { return ePORTCONN; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.
@@ -55,7 +56,7 @@ public:
  	 * \param dataType variable data type.
  	 * \param undefined non-zero if register is undefined in source.
  	 */
-	CPort( CSymbol* symbol, Coord* aLoc );
+	CPortConn( CSymbol* internal, CSymbol* external, Coord* aLoc );
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.
@@ -71,12 +72,12 @@ protected:
 	/*
  	 * Deep Copy.
  	 */
-	void Copy( CObstack* heap, CPort& var );
+	void Copy( CObstack* heap, CPortConn& var );
 private:
 	/*
  	 * Disable copy constructor.
  	 */
-	CPort( const CPort& port );
+	CPortConn( const CPortConn& portconn );
 };
 
-#endif // CPORT_H
+#endif // CPORTCONN_H

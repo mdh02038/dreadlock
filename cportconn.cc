@@ -21,14 +21,12 @@
 /******************************************************************************
  *
  *
- *	   cinstance.cpp
- *		- class definition for instance
+ *	   cportconn.cpp
+ *		- class definition of portconn declaration
  *
  ******************************************************************************
  */
 
-#include "cinstance.h"
-#include "cmodule.h"
 #include "cportconn.h"
 
 
@@ -37,8 +35,8 @@
 /****************************************************
 	Constructor
 *****************************************************/
-CInstance::CInstance( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eINSTANCE ){
+CPortConn::CPortConn( CSymbol* name, CSymbol* external, Coord* aLoc ) 
+    : external(external), CDecl( name, aLoc, ePORTCONN ){
 }
 
 /****************************************************
@@ -46,9 +44,9 @@ CInstance::CInstance( CSymbol* name, Coord* aLoc )
 	- Create a new declaration that is a deep
 	  of this declaration.
 *****************************************************/
-CDecl* CInstance::Clone( CObstack* heap )
+CDecl* CPortConn::Clone( CObstack* heap )
 {
-    CInstance* clone = new(heap) CInstance( GetSymbol(), GetCoord() );
+    CPortConn* clone = new(heap) CPortConn( GetSymbol(), external, GetCoord() );
     clone->Copy( heap, *this );
     return clone;
 }
@@ -57,23 +55,19 @@ CDecl* CInstance::Clone( CObstack* heap )
 	Copy 
 	- perform a deep copy
 *****************************************************/
-void CInstance::Copy( CObstack* heap, CInstance& bus )
+void CPortConn::Copy( CObstack* heap, CPortConn& portconn )
 {
-    CDecl::Copy( heap, bus );
+    CDecl::Copy( heap, portconn );
 }
 
 /****************************************************
 	Dump
 *****************************************************/
-void	CInstance::Dump( FILE* f )
+void	CPortConn::Dump( FILE* f )
 {
-    fprintf( f, "%s ", declName[GetType()] ); 
-    fprintf( f, ": %s, of module %s, defined in ", ModuleName()->GetName(), GetName() ); 
+    fprintf( f, "%s ", declName[GetType()] );
+    fprintf( f, ": %s(%s), defined in ", GetName(), external->GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );
-    list<CPortConn*>::iterator ppc;
-    for( ppc = portConnections.begin(); ppc != portConnections.end(); ++ppc ) {
-	fprintf( f, "\t\t" ); (*ppc)->Dump( f );
-    }
 }	
 
