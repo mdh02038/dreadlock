@@ -29,6 +29,7 @@
 
 #include "cmodule.h"
 #include "cinstance.h"
+#include "cbus.h"
 
 
 
@@ -72,6 +73,13 @@ void	CModule::Dump( FILE* f )
     CDecl::Dump( f );
     fprintf( f, "\n" );
     symtab.Dump( f, 0 );
+    list<CBus*>::iterator bp;
+    for( bp = ports.begin(); bp != ports.end(); ++bp ) {
+	fprintf( f, "\t" ); (*bp)->Dump( f );
+    }
+    for( bp = busses.begin(); bp != busses.end(); ++bp ) {
+	fprintf( f, "\t" ); (*bp)->Dump( f );
+    }
     list<CInstance*>::iterator pin;
     for( pin = instances.begin(); pin != instances.end(); ++pin ) {
 	fprintf( f, "\t" ); (*pin)->Dump( f );

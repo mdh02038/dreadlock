@@ -21,20 +21,19 @@
 /******************************************************************************
  *
  *
- *	   cbus.hpp
- *		- class definition of bus declaration
+ *	   cport.hpp
+ *		- class definition of port declaration
  *
  ******************************************************************************
  */
 
-#ifndef CBUS_H
-#define CBUS_H
+#ifndef CPORT_H
+#define CPORT_H
 
 #include <stdio.h>
 #include "defs.h"
 #include "cdecl.h"
 
-class CBusType;
 
 
 /*
@@ -44,13 +43,11 @@ class CBusType;
 /**
  * Declaration object for variables.
  */
-class CBus: public CDecl
+class CPort: public CDecl
 {
 private:
-    CBusType* busType;
-    bool      isPort;
 public:
-	static Decl_t DeclType() { return eBUS; };
+	static Decl_t DeclType() { return ePORT; };
 	/**
  	 * Create a register declaration.
  	 * \param symbol declaration symbol.
@@ -58,19 +55,7 @@ public:
  	 * \param dataType variable data type.
  	 * \param undefined non-zero if register is undefined in source.
  	 */
-	CBus( CSymbol* symbol, Coord* aLoc );
-	/*
-         * Set bus type
-	 */
-        void BusType( CBusType* bt ) { busType = bt; }
-	/*
-         * Get bus type
-	 */
-        CBusType* BusType() { return busType; }
-	/*
-         * Mark as port
-	 */
-        void IsPort() { isPort = true; }
+	CPort( CSymbol* symbol, Coord* aLoc );
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.
@@ -86,12 +71,12 @@ protected:
 	/*
  	 * Deep Copy.
  	 */
-	void Copy( CObstack* heap, CBus& var );
+	void Copy( CObstack* heap, CPort& var );
 private:
 	/*
  	 * Disable copy constructor.
  	 */
-	CBus( const CBus& bus );
+	CPort( const CPort& port );
 };
 
-#endif // CVC_H
+#endif // CPORT_H

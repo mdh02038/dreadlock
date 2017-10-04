@@ -11,6 +11,7 @@ CFILES = \
 	cbustype.cc \
 	cmodule.cc \
 	cinstance.cc \
+        cmodel.cc
 
 parse.tab.cc parse.tab.hh:	parse.yy
 	bison -v -d parse.yy

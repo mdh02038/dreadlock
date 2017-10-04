@@ -38,6 +38,7 @@
 #include "crule.h"
 #include "cexception.h"
 
+class CBus;
 
 
 
@@ -53,7 +54,9 @@ class CModule: public CDecl
 private:
     CSymtab<CDecl>   symtab;
     list<CInstance*> instances;
-    list<CRule*>    rules;
+    list<CRule*>     rules;
+    list<CBus*>      ports;
+    list<CBus*>      busses;
     list<CException*>    exceptions;
 public:
 	static Decl_t DeclType() { return eMODULE; };
@@ -93,6 +96,14 @@ public:
 	 * add rule
 	 */
 	void Add( CRule* rule ) { rules.push_back( rule ); }
+	/*
+	 * add port
+	 */
+	void AddPort( CBus* port ) { ports.push_back( port ); }
+	/*
+	 * add bus
+	 */
+	void AddBus( CBus* bus ) { busses.push_back( bus ); }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

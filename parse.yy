@@ -81,7 +81,6 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
 %type <vc> vc_name
 %type <symbol> vc_name_ref
 %type <bustype> bus_type
-%type <symbol> bus_type_ref
 %type <module> module_name
 %type <symbol> module_name_ref
 %type <instance> instance_name 
@@ -112,7 +111,6 @@ bus_definition: BUS bus_type
 	      $2->Symtab( symbolTable );
 	      model.Add( $2 );
 	      symbolTable.PopScope();
-	      printf( "bus %s\n", $2->GetName() ); 
 	    }
 ;
 
@@ -123,7 +121,6 @@ bus_statements:
 bus_statement: VC vc_name  ';'
     { 
 	currentBusType->Add( $2 );
-	printf( "vc %s\n", $2->GetName() ); 
     }
     | vc_name_ref ARROW vc_name_ref ';'
     {
@@ -172,19 +169,23 @@ module_statement:
 	{ 
 	    currentModule->Add( $2 );
 	    $2->ModuleName( $1 );
-	    printf( "instance_name %s of %s\n", $2->GetName(), $1->GetName() ); 
 	}
         | port_spec ARROW port_spec ';'
 	{ 
 	    CRule* r = new(declHeap) CRule( $1, $3, &loc );
 	    currentModule->Add( r );
 	}
-	| IGNORE port_spec FROM module_name_ref
+	| IGNORE port_spec FROM module_name_ref ';'
         {
 	    CException* e = new(declHeap) CException( $2, $4, &loc );
 	    currentModule->Add( e );
 		
 	}
+        | bus_type ':' bus_name ';'
+        {
+	    $3->BusType( $1 );
+	    currentModule->AddBus( $3 );
+	} 
 	;
 
 module: MODULE module_name 
@@ -197,7 +198,6 @@ module: MODULE module_name
 	      $2->Symtab( symbolTable );
 	      model.Add($2);
 	      symbolTable.PopScope();
-	      printf( "module %s\n", $2->GetName() );
 	    }
 	;
 
@@ -209,8 +209,12 @@ port_decl_list: port_decl
 	| port_decl_list ',' port_decl
 	;
 	
-port_decl: bus_type_ref bus_name
-	;
+port_decl: bus_type ':' bus_name
+        {
+	    $3->BusType( $1 );
+	    $3->IsPort();
+	    currentModule->AddPort( $3 );
+	} ;
 
 vc_name: SYMBOL
     { $$ = CreateVariable( $1, true, (CVc*)0 ); }
@@ -224,8 +228,6 @@ bus_name_ref: SYMBOL
 
 bus_type: SYMBOL
     { $$ = CreateVariable( $1, true, (CBusType*)0 ); }
-
-bus_type_ref: SYMBOL
 
 module_name: SYMBOL
     { $$ = CreateVariable( $1, true, (CModule*)0 ); }

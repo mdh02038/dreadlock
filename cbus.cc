@@ -36,7 +36,7 @@
 	Constructor
 *****************************************************/
 CBus::CBus( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eBUS ){
+    : isPort(false), busType(NULL), CDecl( name, aLoc, eBUS ){
 }
 
 /****************************************************
@@ -65,7 +65,7 @@ void CBus::Copy( CObstack* heap, CBus& bus )
 *****************************************************/
 void	CBus::Dump( FILE* f )
 {
-    fprintf( f, "%s ", declName[GetType()] );
+    fprintf( f, "%s ", isPort ? "port" : declName[GetType()] );
     fprintf( f, ": %s, defined in ", GetName() ); 
     CDecl::Dump( f );
     fprintf( f, "\n" );

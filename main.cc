@@ -34,6 +34,7 @@ int parse( const char* );
 vector<string> fileList;
 CObstack permStack("permStack");	// used for symbols
 bool dumpModel = false;
+bool dumpAlloy = true;
 CModel model;
 CSymtab<CDecl> symbolTable;;
 
@@ -123,9 +124,17 @@ int main( int argc, const char** argv ) {
     if( dumpModel ) {
 	Dump( stderr );
     }
+
+    model.Validate();
+
     fprintf( stderr, " Warnings: %lu, Errors: %lu\n", warningCount, errorCount );
     if( errorCount > 0 ) {
 	exit(1);
     }
+
+    if( dumpAlloy ) {
+	model.DumpAlloy( stdout );
+    }
+
 }
 

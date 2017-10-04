@@ -75,29 +75,17 @@ public:
  	 */
 	void Run( CSymbol* name ) { runs.push_back( name ); }
 	/*
+ 	 * validate model
+ 	 */
+	void Validate();
+	/*
+ 	 * dump alloy model to file
+ 	 */
+	void DumpAlloy( FILE* f );
+	/*
  	 * dump model to file
  	 */
-	void Dump( FILE* f )
-	{
-	    fprintf( f, "Symbol Table:\n" );
-            symtab.Dump( f );
-	    list<CBusType*>::iterator btp;
-	    for( btp=busses.begin(); btp!=busses.end(); ++btp ) {
-		(*btp)->Dump( f );
-	    }
-	    list<CModule*>::iterator mp;
-	    for( mp=modules.begin(); mp!=modules.end(); ++mp ) {
-		(*mp)->Dump( f );
-	    }
-	    list<CSymbol*>::iterator cp;
-	    for( cp=checks.begin(); cp!=checks.end(); ++cp ) {
-		fprintf( f, "check: %s\n", (*cp)->GetName() );
-	    }
-	    list<CSymbol*>::iterator rp;
-	    for( rp=runs.begin(); rp!=runs.end(); ++rp ) {
-		fprintf( f, "run: %s\n", (*rp)->GetName() );
-	    }
-	}
+	void Dump( FILE* f );
 };
 
 #endif // MODEL_H

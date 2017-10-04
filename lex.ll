@@ -61,6 +61,7 @@ extern Coord loc;
 ")"		{return ')';}
 ";"		{return ';';}
 "*"		{return '*';}
+":"		{return ':';}
 "->"		{return ARROW;}
 "//".*		{}
 [a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
