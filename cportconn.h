@@ -63,6 +63,14 @@ public:
  	 * \return new declaration.
  	 */
 	virtual CDecl* Clone( CObstack* heap );
+	/*
+ 	 * return internal symbol
+	 */
+	CSymbol* Internal() { return GetSymbol(); }
+	/*
+ 	 * return external symbol
+	 */
+	CSymbol* External() { return external; }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

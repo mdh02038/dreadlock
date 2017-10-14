@@ -38,6 +38,12 @@
 #include "cbustype.h"
 #include "cmodule.h"
 
+struct ConnectionInfo {
+    CInstance* instance;
+    CSymbol*   name;
+    CSymbol*   busType;
+};
+
 
 /**
  * Declaration object for variables.
@@ -92,6 +98,14 @@ public:
 protected:
         const list<CModule*> CollectTopLevelModules();	
 	const list<CInstance*> FlattenAndExtractInstances( const list<CModule*>& moduleList );
+        template<typename T> T* Resolve( CSymtab<CDecl> symtab, CSymbol* symbol )
+        {
+	    CDecl* d = symtab.Lookup( symbol );
+	    if( !d || d->GetType() != T::DeclType() ) {
+	        return (T*)NULL;
+	    }
+	    return (T*)d;
+	}
 };
 
 #endif // MODEL_H

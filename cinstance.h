@@ -75,6 +75,14 @@ public:
 	 * add port connections
 	 */
         void Add( CPortConn* pc ) { portConnections.push_back( pc ); }
+        /*
+	 * get port connections
+	 */
+        const list<CPortConn*>& PortConnections() { return portConnections; }
+        /*
+	 * set port connections
+	 */
+        void PortConnections( const list<CPortConn*>& portConnections ) {this->portConnections = portConnections; }
 	/*
 	 * get module type
 	 */

@@ -27,12 +27,13 @@
  ******************************************************************************
  */
 
+#include <set>
+#include <vector>
 #include "cmodel.h"
 #include "cbus.h"
-
+#include "cportconn.h"
 
 extern CObstack* declHeap;
-
 /*
  * build model
  */
@@ -144,8 +145,8 @@ void CModel::DumpAlloy( FILE* f )
      * dump bus sigs
      */
     fprintf( f, "\n// Bus signatures\n" );
-    list<CBusType*>::iterator btp;
     fprintf( f, "one sig " );
+    list<CBusType*>::iterator btp;
     for( btp=busses.begin(); btp!=busses.end();  ) {
 	fprintf( f, "%s", (*btp)->GetName() );
 	btp++;
@@ -162,6 +163,25 @@ void CModel::DumpAlloy( FILE* f )
     /*
      * dump vc sigs
      */
+    set<CSymbol*> vcNames;
+    for( btp=busses.begin(); btp!=busses.end(); ++btp  ) {
+	list<CVc*>::const_iterator vp;
+	for( vp = (*btp)->Vcs().begin(); vp != (*btp)->Vcs().end(); ++vp ) {
+ 	    vcNames.insert( (*vp)->GetSymbol() );	
+        }
+    }
+    fprintf( f, "\n// Vc signatures\n" );
+    fprintf( f, "one sig " );
+    set<CSymbol*>::const_iterator sp;
+    for( sp = vcNames.begin(); sp != vcNames.end();  ) {
+	fprintf( f, "%s", (*sp)->GetName() );
+	sp++;
+	if( sp!=vcNames.end() ) {
+	    fprintf( f, ", " );
+	}
+    }
+    fprintf( f, " extends Vc {}\n" );
+
 
     /*
      * dump unit sigs
@@ -184,19 +204,15 @@ void CModel::DumpAlloy( FILE* f )
     string directions[2] = { "IN", "OUT" };
     list<CInstance*>::const_iterator ip;
     for( ip = instances.begin(); ip != instances.end(); ++ip ) {
-	CDecl* d = symtab.Lookup( (*ip)->ModuleName() );
-	ASSERT( d );
-	ASSERT( d->GetType() == eMODULE );
-	CModule* m = (CModule*)d;
+	CModule* m = Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	ASSERT( m );
 	string instanceName = (*ip)->GetName();
         fprintf( f, "\n// %s \n", instanceName.c_str() );
 	list<CBus*>::const_iterator bp;
 	for( bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
+	    CBusType* busType = Resolve<CBusType>( symtab, (*bp)->BusType() );
+	    ASSERT( busType );
 	    string busName = (*bp)->GetName();
-	    CDecl* d = symtab.Lookup( (*bp)->BusType() );
-	    ASSERT( d );
-	    ASSERT( d->GetType() == eBUS_TYPE );
-	    CBusType* busType = (CBusType*)d;
 	    list<CVc*>::const_iterator vp;
 	    for( vp = busType->Vcs().begin(); vp != busType->Vcs().end(); ++vp ) {
 	        string vcName = (*vp)->GetName();
@@ -211,12 +227,90 @@ void CModel::DumpAlloy( FILE* f )
     }
 
     /*
+     * dump connection rules
+     */
+
+    /*
      * dump module rules
      */
 
     /*
      * dump module connections
      */
+    CSymbol* empty = CSymbol::Lookup("");
+    list<CInstance*>::const_iterator currentInstance;
+    for( currentInstance = instances.begin(); currentInstance != instances.end(); ++currentInstance ) {
+        map<CSymbol*,vector<ConnectionInfo> > name2Connection;
+        vector<ConnectionInfo> noConnects;
+
+        // find all connections
+        CModule* m = Resolve<CModule>( symtab, (*currentInstance)->ModuleName() );
+	ASSERT( m );
+        for( ip = m->Instances().begin(); ip != m->Instances().end(); ++ip ) {
+            ASSERT( m );
+            list<CPortConn*>::const_iterator pcp;
+            for( pcp = (*ip)->PortConnections().begin(); pcp != (*ip)->PortConnections().end(); ++pcp ) {
+                ConnectionInfo ci;
+	        CModule* definingModule = Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	        ASSERT( definingModule );
+	        CBus* b = Resolve<CBus>( definingModule->Symtab(), (*pcp)->Internal() ); 
+	        ASSERT( b );
+                ci.instance = *ip;
+                ci.name     = (*pcp)->Internal();
+		ci.busType = b->BusType();
+                name2Connection[(*pcp)->External()].push_back( ci );
+            }
+        }
+
+	if( name2Connection.size() == 0 ) {
+	    continue;
+	}
+
+        fprintf( f, "\n// connections for %s {\n", (*currentInstance)->GetName() );
+        fprintf( f, "pred %s {\n", (*currentInstance)->GetName() );
+
+	CSymtab<CDecl> msymtab = m->Symtab();
+	string prefix = (*currentInstance)->GetName();
+        map<CSymbol*,vector<ConnectionInfo> >::iterator mcip;
+        for( mcip = name2Connection.begin(); mcip != name2Connection.end(); ++mcip ) {
+            if( mcip->first == empty ) {
+                noConnects = mcip->second;
+            } else if( mcip->second.size() < 2 ) {
+                ASSERT( false );
+            } else if( mcip->second.size() == 2 ) {
+              string bus1 = mcip->second[0].name->GetName();
+	      CBus* b1 = Resolve<CBus>( msymtab, mcip->first ); 
+	      ASSERT( b1 );
+              string instance1 = mcip->second[0].instance->GetName();
+              string bus2 = mcip->second[1].name->GetName();
+	      CBus* b2 = Resolve<CBus>( msymtab, mcip->first ); 
+	      ASSERT( b2 );
+              string instance2 = mcip->second[1].instance->GetName();
+	      ASSERT( b1->BusType() == b2->BusType() );
+	      CBusType* bt = Resolve<CBusType>( symtab, b1->BusType() );
+	      ASSERT( bt );
+	      ASSERT( bt->GetSymbol() == mcip->second[0].busType );
+	      ASSERT( bt->GetSymbol() == mcip->second[1].busType );
+	      instance1 = prefix + "_" + instance1;
+	      instance2 = prefix + "_" + instance2;
+              fprintf( f, "\t%s_connect[%s, %s, %s, %s]\n", b1->BusType()->GetName(), bus1.c_str(), 
+				instance1.c_str(), bus2.c_str(), instance2.c_str() );
+            } else {
+                ASSERT( false );
+            }
+        }
+
+        vector<ConnectionInfo>::const_iterator cip;
+        for( cip = noConnects.begin(); cip != noConnects.end(); ++cip ) {
+              string bus = cip->name->GetName();
+              string instance = cip->instance->GetName();
+	      string busType = cip->busType->GetName();
+	      instance = prefix + "_" + instance;
+              fprintf( f, "\t%s_noconnect[%s, %s]\n", busType.c_str(), bus.c_str(), instance.c_str() );
+        }
+        fprintf( f, "}\n" );
+    }
+
 
     /*
      * dump run statements
@@ -246,10 +340,7 @@ const list<CModule*> CModel::CollectTopLevelModules()
     for( mp = modules.begin(); mp != modules.end(); ++mp ) {
 	list<CInstance*>::const_iterator ip;
 	for( ip = (*mp)->Instances().begin(); ip != (*mp)->Instances().end(); ++ip ) {
-	    CDecl* d = symtab.Lookup( (*ip)->ModuleName() );
-	    ASSERT( d );
-	    ASSERT( d->GetType() == eMODULE );
-	    CModule* m = (CModule*)d;
+	    CModule* m = Resolve<CModule>( symtab, (*ip)->ModuleName() );
 	    moduleCount[m]++;
 	}
     }
@@ -270,6 +361,15 @@ void Elaborate( string prefix, CModule* m, list<CInstance*>& instances )
 	string newPrefix = prefix + "_" + moduleName;
 	CInstance* instance = new(declHeap) CInstance( CSymbol::Lookup(newPrefix.c_str()),(*ip)->GetCoord() );
 	instance->ModuleName( (*ip)->ModuleName() );
+        list<CPortConn*>::const_iterator pcp;
+	for( pcp = (*ip)->PortConnections().begin(); pcp != (*ip)->PortConnections().end(); ++pcp ) {
+	    string newName = (*pcp)->External()->GetName();	
+	    if( newName.size() > 0 ) {
+ 	        newName = prefix + "_" + newName;	
+	    }
+	    CPortConn* pc = new(declHeap) CPortConn( (*pcp)->GetSymbol(), CSymbol::Lookup(newName.c_str()), (*pcp)->GetCoord() );
+	    instance->Add( pc );
+	}
 	instances.push_back( instance );
 	// ??? mdh - need to find module decl an recurse
     }
