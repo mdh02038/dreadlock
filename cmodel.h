@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <list>
+#include <set>
 #include "defs.h"
 #include "cdecl.h"
 #include "cbustype.h"
@@ -52,6 +53,7 @@ class CModel {
 private:
     list<CBusType*> busses;
     list<CModule*>  modules;
+    set<CSymbol*>  ports;
     CSymtab<CDecl>  symtab;
     list<CSymbol*>  runs;
     list<CSymbol*>  checks;
@@ -95,10 +97,7 @@ public:
  	 * dump model to file
  	 */
 	void Dump( FILE* f );
-protected:
-        const list<CModule*> CollectTopLevelModules();	
-	const list<CInstance*> FlattenAndExtractInstances( const list<CModule*>& moduleList );
-        template<typename T> T* Resolve( CSymtab<CDecl> symtab, CSymbol* symbol )
+        template<typename T> static T* Resolve( CSymtab<CDecl> symtab, CSymbol* symbol )
         {
 	    CDecl* d = symtab.Lookup( symbol );
 	    if( !d || d->GetType() != T::DeclType() ) {
@@ -106,6 +105,9 @@ protected:
 	    }
 	    return (T*)d;
 	}
+protected:
+        const list<CModule*> CollectTopLevelModules();	
+	const list<CInstance*> FlattenAndExtractInstances( const list<CModule*>& moduleList );
 };
 
 #endif // MODEL_H
