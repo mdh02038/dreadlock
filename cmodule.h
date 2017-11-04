@@ -112,6 +112,10 @@ public:
 	 * return port list
 	 */
 	const list<CBus*>& Ports() { return ports; }
+	/*
+	 * return rule list
+	 */
+	const list<CRule*>& Rules() { return rules; }
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

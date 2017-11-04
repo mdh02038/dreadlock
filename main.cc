@@ -37,6 +37,7 @@ bool dumpModel = false;
 bool dumpAlloy = true;
 CModel model;
 CSymtab<CDecl> symbolTable;;
+string outputFilename = "-";
 
 extern unsigned long errorCount;
 extern unsigned long warningCount;
@@ -64,6 +65,7 @@ void PrintUsage( void )
     printf( "'Dreadlock' is a tool for analysing system deadlock.\n\n" );
     printf( "Usage: dreadlock [options] <file1> [<file2 ...]\n\n" );
     printf( "Options:\n" );
+    printf( " -o filename                output filename\n" );
     printf( " --version                  Print version\n" );
     printf( " --help                     This message\n" );
     printf( " --dump                     Dump model\n" );
@@ -86,6 +88,9 @@ void	ParseArguments( int argc, const char** argv )
                 printf( "%s",  copyright );
                 printf( "\nWritten by Mark Hummel\n" );
                 exit(0);
+            } else if( !strcmp( &argv[i][1], "o" ) ) {
+		outputFilename = argv[i+1];
+		i++;
             } else if( !strcmp( &argv[i][1], "-help" ) ) {
                 PrintUsage();
                 exit(0);
@@ -134,7 +139,14 @@ int main( int argc, const char** argv ) {
     }
 
     if( dumpAlloy ) {
-	model.DumpAlloy( stdout );
+	FILE* f;
+	if( outputFilename == "-" ) {
+	    f = stdout;
+	} else {
+	    f = fopen( outputFilename.c_str(), "w" );
+	    ASSERT( f );
+        }
+	model.DumpAlloy( f );
     }
 
 }
