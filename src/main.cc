@@ -44,7 +44,6 @@ extern unsigned long errorCount;
 extern unsigned long warningCount;
 
 #define DREADLOCK "Dreadlock"
-#define VERSION "0.0.1"
 
 char copyright[] = "Copyright (C) 1997-2017 Mark Hummel\n\n"
      "Dreadlock comes with ABSOLUTELY NO WARRANTY; This is free\n"

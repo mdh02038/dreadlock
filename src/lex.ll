@@ -32,7 +32,7 @@ class CInstance;
 
 #define YY_DECL int yylex()
 
-#include "parse.tab.hh"
+#include "parse.hh"
 extern Coord loc;
 
 #define NEW_LINE	loc.lineno++;
