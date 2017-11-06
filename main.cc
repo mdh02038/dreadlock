@@ -38,6 +38,7 @@ bool dumpAlloy = true;
 CModel model;
 CSymtab<CDecl> symbolTable;;
 string outputFilename = "-";
+string topModuleName = "";
 
 extern unsigned long errorCount;
 extern unsigned long warningCount;
@@ -66,6 +67,7 @@ void PrintUsage( void )
     printf( "Usage: dreadlock [options] <file1> [<file2 ...]\n\n" );
     printf( "Options:\n" );
     printf( " -o filename                output filename\n" );
+    printf( " -t moduleName              select module to elaborate\n" );
     printf( " --version                  Print version\n" );
     printf( " --help                     This message\n" );
     printf( " --dump                     Dump model\n" );
@@ -90,6 +92,9 @@ void	ParseArguments( int argc, const char** argv )
                 exit(0);
             } else if( !strcmp( &argv[i][1], "o" ) ) {
 		outputFilename = argv[i+1];
+		i++;
+            } else if( !strcmp( &argv[i][1], "t" ) ) {
+		topModuleName = argv[i+1];
 		i++;
             } else if( !strcmp( &argv[i][1], "-help" ) ) {
                 PrintUsage();
@@ -127,7 +132,7 @@ int main( int argc, const char** argv ) {
     ParseArguments( argc, argv );
     for_each( fileList.begin(), fileList.end(), ParseFile() );
 
-    model.Build();
+    model.Build( topModuleName );
 
     if( dumpModel ) {
 	Dump( stderr );

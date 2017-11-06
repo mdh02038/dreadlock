@@ -88,7 +88,7 @@ public:
 	/*
  	 * build model
  	 */
-	void Build();
+	void Build( const string& topModuleName );
 	/*
  	 * dump alloy model to file
  	 */

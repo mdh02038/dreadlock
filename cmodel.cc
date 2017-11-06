@@ -39,7 +39,7 @@ extern CObstack* declHeap;
 /*
  * build model
  */
-void CModel::Build()
+void CModel::Build( const string& topModuleName )
 {
 	// bus rule references
 	// model rule references
@@ -54,7 +54,21 @@ void CModel::Build()
 	// instance refs use valid models
 
 	// collect top level models
-        topLevelModules = CollectTopLevelModules();	
+	if( topModuleName == "" ) {
+	    ASSERT( false );
+            topLevelModules = CollectTopLevelModules();	
+	} else {
+            CModule* m = CModel::Resolve<CModule>( symtab, CSymbol::Lookup( topModuleName.c_str() ) );
+	    ASSERT( m );
+	    topLevelModules.push_back( m );
+	}
+	
+	checks.clear();
+	runs.clear();
+	for( list<CModule*>::const_iterator mp = topLevelModules.begin(); mp != topLevelModules.end(); ++mp ) {
+	    checks.push_back( (*mp)->GetSymbol() );
+	    runs.push_back( (*mp)->GetSymbol() );
+	}
 
         // flatten model extract instances
 	instances = FlattenAndExtractInstances( topLevelModules );
