@@ -1,14 +1,22 @@
-Dreadlock
+# Dreadlock
 
------------------
+---
 Deadlock analysis tool
 
-To build:
----------
+Converts a system description into an alloy file to test if it is deadlock free.
+
+## To build:
+---
 ./configure
+
 make
+
 make check
+
 make install
+
+## BNF
+[BNF can be found here][bnf]
 
 
 
