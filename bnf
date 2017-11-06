@@ -19,35 +19,45 @@
  *****************************************************************************
  */
 
-bus_type, bus_name, vc_name, unit_name: [a-zA-Z][a-zA-Z0-9_]
 
+LEXER:
+Whitespace:  \t \f \r
+Reserved words: vc, bus, module
+Comments: // or /* */
+Identifiers: [a-zA-Z][a-zA-Z0-9_]*
 
-start: statement*
+BNF:
+=============================
 
-statement: 
-	bus_definition |
-	unit_definition
-	configuration_statement
-	check_statement
-	run_statement
+description:    statement*
 
-bus_definition:
-	BUS bus_type '{' vc_declaration* '}'
+statement:      bus_definition | 
+	        module
 
-vc_declaration: VC vc_name ';'
+bus_definition: BUS bus_type '{' bus_statement* '}'
 
-unit_definition: 
-	UNIT unit_name { (bus_declaration | rule)* }
+bus_statement: VC vc_name  ';' | 
+	       vc_name '->' vc_name ';'
 
-bus_declaration: bus_type bus_name ';'
+port_spec:  bus_name | 
+	    bus_name '.' '*' | 
+	    bus_name '.' vc_name ;	
 
-rule:  { (bus_name[.(vc_name|*)] -> bus_name[.(vc_name|*)])* }
+port: port_name '(' ')' | 
+      port_name '(' bus_name ')'
 
-configuration_statement: CONFIG config_name { (unit_instance | connect_statement)* }
-check_statement: CHECK config_name
-run_statement: RUN config_name
+module_statement: 
+        module_name_ref instance_name '(' port* ')' ';'
+        | port_spec '->' port_spec ';'
+        | bus_type ':' bus_name ';'
 
-symbol table namespaces
-- top: all modules and busses, options/variables
-- per module: ports, bus instances, module instances
-- 
+module: MODULE module_name '(' port_decl* ')' '{' module_statement* '}'
+
+port_decl: bus_type ':' bus_name
+
+bus_type:    IDENTIFIER
+vc_name:     IDENTIFIER
+bus_name:    IDENTIFIER
+port_name:   IDENTIFIER
+module_name: IDENTIFIER
+
