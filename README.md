@@ -16,7 +16,7 @@ make check
 make install
 
 ## BNF
-[BNF can be found here][bnf]
+[BNF can be found here](bnf)
 
 
 
