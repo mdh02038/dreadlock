@@ -464,7 +464,7 @@ void CModel::DumpAlloy( FILE* f )
     /*
      * dump run statements
      */
-    fprintf( f, "\n// Run statements\n" );
+    fprintf( f, "\n// Check statements\n" );
     list<CSymbol*>::iterator cp;
     for( cp=runs.begin(); cp!=runs.end(); ++cp ) {
 	fprintf( f, "check %s { %s => deadlock_free }\n", (*cp)->GetName(), (*cp)->GetName() );
@@ -473,7 +473,7 @@ void CModel::DumpAlloy( FILE* f )
     /* 
      * dump check statements
      */
-    fprintf( f, "\n// Check statements\n" );
+    fprintf( f, "\n// Run statements\n" );
     list<CSymbol*>::iterator rp;
     for( rp=runs.begin(); rp!=runs.end(); ++rp ) {
 	fprintf( f, "run %s { %s }\n", (*rp)->GetName(), (*rp)->GetName() );

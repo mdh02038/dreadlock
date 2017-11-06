@@ -1,0 +1,396 @@
+/*****************************************
+ ABus bus definition
+ ****************************************/
+bus A {
+    vc REQ;
+    vc RESP;
+    vc VC0;
+    vc VC1;
+    vc VC2;
+    vc VC3;
+}
+
+/*****************************************
+ PCIe bus definition
+ ****************************************/
+bus PCIE {
+    vc POST;
+    vc NPOST;
+    vc RESP;
+    NPOST -> POST;
+    NPOST -> RESP;
+    RESP -> POST;
+}
+
+/*****************************************
+ pcie device definition
+ ****************************************/
+module PDEV (
+    PCIE: PCIE0
+)
+{
+    // support read as a slave
+    PCIE0.NPOST -> PCIE0.RESP;
+}
+
+/*****************************************
+ ADEV definition
+ ****************************************/
+module ADEV (
+    PCIE: PCIE0,
+    A:  A0
+  )
+{
+      PCIE0.POST -> A0.VC2;
+
+      PCIE0.NPOST -> A0.VC2;
+      PCIE0.NPOST -> PCIE0.RESP;
+      PCIE0.NPOST -> A0.REQ;
+
+      A0.REQ -> A0.RESP;
+      A0.REQ -> A0.VC2;
+
+      A0.VC0 -> PCIE0.POST;
+      A0.VC0 -> PCIE0.NPOST;
+      A0.VC0 -> A0.REQ;
+      A0.VC0 -> A0.VC1;
+      A0.VC0 -> A0.VC2;
+      A0.VC0 -> A0.RESP;
+
+      A0.VC3 -> A0.RESP;
+}
+
+module ADEV_WITH_OPTION1 (
+    PCIE: PCIE0,
+    A:  A0
+  )
+{
+      PCIE0.POST -> A0.VC2;
+
+      PCIE0.NPOST -> A0.VC2;
+      PCIE0.NPOST -> PCIE0.RESP;
+
+      A0.REQ -> A0.RESP;
+      A0.REQ -> A0.VC1;
+      A0.REQ -> A0.VC2;
+
+      A0.VC0 -> PCIE0.POST;
+      A0.VC0 -> PCIE0.NPOST;
+      A0.VC0 -> A0.REQ;
+      A0.VC0 -> A0.VC1;
+      A0.VC0 -> A0.VC2;
+      A0.VC0 -> A0.RESP;
+
+      A0.VC3 -> A0.RESP;
+}
+
+module CDEV (
+    PCIE: PCIE0,
+    A: A0
+)
+{
+    PCIE0.POST -> PCIE0.POST;
+    PCIE0.POST -> A0.REQ;
+
+    PCIE0.NPOST -> PCIE0.NPOST;
+    PCIE0.NPOST -> PCIE0.RESP;
+    PCIE0.NPOST -> A0.REQ;
+
+    PCIE0.RESP -> PCIE0.RESP;
+
+    A0.REQ -> A0.REQ;
+    A0.REQ -> A0.RESP;
+
+    A0.VC1 -> A0.VC3;
+    A0.VC1 -> A0.RESP;
+
+    A0.VC2 -> A0.VC3;
+    A0.VC2 -> A0.RESP;
+}
+
+module BDEV_S ( PCIE: PCIE0, 
+		PCIE: PCIE1,
+		A:  A0 )
+{
+    PCIE0.POST -> PCIE1.POST;
+    PCIE0.POST -> A0.REQ;
+
+    PCIE0.NPOST -> PCIE1.NPOST;
+    PCIE0.NPOST -> PCIE0.RESP;
+
+    PCIE0.RESP -> PCIE1.RESP;
+    
+    PCIE1.POST -> PCIE0.POST;
+
+    PCIE1.NPOST -> PCIE0.NPOST;
+
+    PCIE1.RESP -> PCIE0.RESP;
+    
+    A0.REQ -> PCIE0.POST;
+    A0.REQ -> PCIE0.NPOST;
+    A0.REQ -> A0.RESP;
+}
+
+module BDEV_M ( PCIE: PCIE0, 
+		PCIE: PCIE1,
+		A:  A0 )
+{
+    PCIE0.POST -> A0.REQ;
+    PCIE0.POST -> PCIE1.POST;
+
+    PCIE0.RESP -> PCIE1.RESP;
+
+    PCIE0.NPOST -> A0.REQ;
+    PCIE0.NPOST -> PCIE1.NPOST;
+    
+    PCIE1.POST -> PCIE0.POST;
+
+    PCIE1.NPOST -> PCIE0.NPOST;
+    PCIE1.NPOST -> PCIE1.RESP;
+
+    PCIE1.RESP -> PCIE0.RESP;
+    
+    A0.REQ -> PCIE0.POST;
+    A0.REQ -> A0.RESP;
+
+    A0.RESP -> PCIE0.RESP;
+}
+
+module BDEV_F ( PCIE: PCIE0, 
+		PCIE: PCIE1,
+		A:  A0 )
+{
+    PCIE0.POST -> A0.REQ;
+    PCIE0.POST -> PCIE1.POST;
+
+    PCIE0.RESP -> A0.RESP;
+    PCIE0.RESP -> PCIE1.RESP;
+
+    PCIE0.NPOST -> A0.REQ;
+    PCIE0.NPOST -> PCIE1.NPOST;
+    PCIE0.NPOST -> PCIE0.RESP;
+    
+    PCIE1.POST -> PCIE0.POST;
+
+    PCIE1.NPOST -> PCIE0.NPOST;
+
+    PCIE1.RESP -> PCIE0.RESP;
+    
+    A0.REQ -> PCIE0.POST;
+    A0.REQ -> PCIE0.NPOST;
+    A0.REQ -> A0.RESP;
+
+    A0.RESP -> PCIE0.RESP;
+}
+
+module ASW (
+    A: A0,
+    A: A1,
+    A: A2,
+    A: A3
+)
+{
+    A0.* -> A1.*;
+    A0.* -> A2.*;
+    A0.* -> A3.*;
+
+    A1.* -> A0.*;
+    A1.* -> A2.*;
+    A1.* -> A3.*;
+
+    A2.* -> A0.*;
+    A2.* -> A1.*;
+    A2.* -> A3.*;
+
+    A3.* -> A0.*;
+    A3.* -> A1.*;
+    A3.* -> A2.*;
+
+}
+
+
+module ASW_restricted (
+    A: A0,
+    A: A1,
+    A: A2,
+    A: A3
+)
+{
+    A0.* -> A1.*;
+    A0.* -> A2.*;
+    A0.* -> A3.*;
+
+    A1.* -> A0.*;
+    A1.* -> A2.*;
+    A1.* -> A3.*;
+
+    A2.* -> A0.*;
+    A2.* -> A1.*;
+//    A2.* -> A3.*;
+
+    A3.* -> A0.*;
+    A3.* -> A1.*;
+ //   A3.* -> A2.*;
+
+}
+
+module PSWITCH (
+    PCIE: PCIE0,
+    PCIE: PCIE1,
+    PCIE: PCIE2,
+    PCIE: PCIE3,
+    PCIE: PCIE4
+)
+{
+    PCIE0.* -> PCIE1.*;
+    PCIE0.* -> PCIE2.*;
+    PCIE0.* -> PCIE3.*;
+    PCIE0.* -> PCIE4.*;
+    PCIE0.NPOST -> PCIE0.RESP;
+
+    PCIE1.* -> PCIE0.*;
+    PCIE1.* -> PCIE2.*;
+    PCIE1.* -> PCIE3.*;
+    PCIE1.* -> PCIE4.*;
+    PCIE1.NPOST -> PCIE1.RESP;
+
+    PCIE2.* -> PCIE0.*;
+    PCIE2.* -> PCIE1.*;
+    PCIE2.* -> PCIE3.*;
+    PCIE2.* -> PCIE4.*;
+    PCIE2.NPOST -> PCIE2.RESP;
+
+    PCIE3.* -> PCIE0.*;
+    PCIE3.* -> PCIE1.*;
+    PCIE3.* -> PCIE2.*;
+    PCIE3.* -> PCIE4.*;
+    PCIE3.NPOST -> PCIE3.RESP;
+
+    PCIE4.* -> PCIE0.*;
+    PCIE4.* -> PCIE1.*;
+    PCIE4.* -> PCIE2.*;
+    PCIE4.* -> PCIE3.*;
+    PCIE4.NPOST -> PCIE4.RESP;
+}
+
+module case1 ()
+{
+      PCIE: PB0;
+      PCIE: PB1;
+      PCIE: PB2;
+      A:  AB0;
+      A:  AB1;
+      CDEV CDEV0( PCIE0(PB0), A0() );
+      ADEV ADEV0( PCIE0(PB1), A0(AB0) );
+      ADEV ADEV1( PCIE0(PB2), A0(AB1) );
+      PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(), PCIE4() );
+      ASW ASW0( A0(AB0), A1(AB1), A2(), A3() );
+}
+
+module case2 ()
+{
+
+    PCIE: PB0;
+    PCIE: PB1;
+    PCIE: PB2;
+    PCIE: PB3;
+    A:  AB0;
+    A:  AB1;
+    A:  AB2;
+    PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(PB3), PCIE4() );
+    ASW ASW0( A0(AB0), A1(AB1), A2(AB2), A3() );
+    ADEV_WITH_OPTION1 ADEV0( PCIE0(PB1), A0(AB0) );
+    ADEV_WITH_OPTION1 ADEV1( PCIE0(PB2), A0(AB1) );
+    CDEV CDEV0( PCIE0(PB0), A0() );
+    BDEV_S BDEV0( PCIE0(PB3), PCIE1(), A0(AB2) );
+}
+
+
+module case3 ()
+{
+    PCIE: PB0;
+    PCIE: PB1;
+    PCIE: PB2;
+    PCIE: PB3;
+    PCIE: PB4;
+    A:  AB0;
+    A:  AB1;
+    A:  AB2;
+
+    PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(PB3), PCIE4() );
+    ASW ASW0( A0(AB0), A1(AB1), A2(AB2), A3() );
+
+    ADEV_WITH_OPTION1 ADEV0( PCIE0(PB1), A0(AB0) );
+    ADEV_WITH_OPTION1 ADEV1( PCIE0(PB2), A0(AB1) );
+    CDEV CDEV0( PCIE0(PB0), A0() );
+    PDEV PDEV0( PCIE0(PB4) );
+    BDEV_M BDEV0( PCIE0(PB4), PCIE1(PB3), A0(AB2) );
+}
+
+
+module case4 ()
+ {
+    PCIE: PB0;
+    PCIE: PB1;
+    PCIE: PB2;
+    PCIE: PB3;
+    PCIE: PB4;
+    PCIE: PB4;
+    PCIE: PB5;
+    A:  AB0;
+    A:  AB1;
+    A:  AB2;
+    A:  AB3;
+
+    PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(PB3), PCIE4(PB4) );
+    ASW_restricted ASW0( A0(AB0), A1(AB1), A2(AB2), A3(AB3) );
+
+    ADEV_WITH_OPTION1 ADEV0( PCIE0(PB1), A0(AB0) );
+    ADEV_WITH_OPTION1 ADEV1( PCIE0(PB2), A0(AB1) );
+    CDEV CDEV0( PCIE0(PB0), A0() );
+    PDEV PDEV0( PCIE0(PB5) );
+    BDEV_S BDEV0( PCIE0(PB3), PCIE1(), A0(AB2) );
+    BDEV_M BDEV1( PCIE0(PB5), PCIE1(PB4), A0(AB3) );
+}
+
+
+
+module case5 ()
+{
+    PCIE: PB0;
+    PCIE: PB1;
+    PCIE: PB2;
+    PCIE: PB3;
+    PCIE: PB4;
+    A:  AB0;
+    A:  AB1;
+    A:  AB2;
+
+    PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(PB3), PCIE4(PB4) );
+    ASW ASW0( A0(AB0), A1(AB1), A2(AB2), A3() );
+
+    ADEV_WITH_OPTION1 ADEV0( PCIE0(PB1), A0(AB0) );
+    ADEV_WITH_OPTION1 ADEV1( PCIE0(PB2), A0(AB1) );
+    CDEV CDEV0( PCIE0(PB0), A0() );
+    PDEV PDEV0( PCIE0(PB4) );
+    BDEV_F BDEV0( PCIE0(PB3), PCIE1(), A0(AB2) );
+}
+
+
+module case6 ()
+{
+    PCIE: PB0;
+    PCIE: PB1;
+    PCIE: PB2;
+    A:  AB0;
+    A:  AB1;
+    A:  AB2;
+
+    PSWITCH PSWITCH0( PCIE0(PB0), PCIE1(PB1), PCIE2(PB2), PCIE3(), PCIE4() );
+    ASW ASW0( A0(AB0), A1(AB1), A2(AB2), A3() );
+
+    ADEV_WITH_OPTION1 ADEV0( PCIE0(PB1), A0(AB0) );
+    ADEV_WITH_OPTION1 ADEV1( PCIE0(PB2), A0(AB1) );
+    CDEV CDEV0( PCIE0(PB0), A0(AB2) );
+}
+
