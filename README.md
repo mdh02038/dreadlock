@@ -3,7 +3,7 @@
 ---
 Deadlock analysis tool
 
-Converts a system description into an alloy file to test if it is deadlock free.
+Converts a system description into an [alloy](http://alloy.mit.edu/alloy/) file to test if it is deadlock free.
 
 ## To build:
 ---
