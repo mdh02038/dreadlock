@@ -1,6 +1,5 @@
 - update bnf
 - Add include file ability
 - Add conditionals 
-- command option: --dump
-- command option: --alloy
+- Convert ASSERTS to error messages
 

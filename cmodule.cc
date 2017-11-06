@@ -88,9 +88,5 @@ void	CModule::Dump( FILE* f )
     for( pr = rules.begin(); pr != rules.end(); ++pr ) {
 	fprintf( f, "\t" ); (*pr)->Dump( f );
     }
-    list<CException*>::iterator  pe;
-    for( pe = exceptions.begin(); pe != exceptions.end(); ++pe ) {
-	fprintf( f, "\t" ); (*pe)->Dump( f );
-    }
 }	
 

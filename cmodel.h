@@ -78,14 +78,6 @@ public:
  	 */
 	void Add( CSymtab<CDecl> symtab ) { this->symtab = symtab; }
 	/*
- 	 * add check to model
- 	 */
-	void Check( CSymbol* name ) { checks.push_back( name ); }
-	/*
- 	 * add run to model
- 	 */
-	void Run( CSymbol* name ) { runs.push_back( name ); }
-	/*
  	 * build model
  	 */
 	void Build( const string& topModuleName );

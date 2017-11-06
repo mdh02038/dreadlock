@@ -48,11 +48,7 @@ extern Coord loc;
 
 "vc"		{return VC;}
 "bus"		{return BUS;}
-"check"		{return CHECK;}
-"run"		{return RUN;}
 "module"	{return MODULE;}
-"ignore"	{return IGNORE;}
-"from"		{return FROM;}
 "{"		{return '{';}
 "}"		{return '}';}
 "."		{return '.';}

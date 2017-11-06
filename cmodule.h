@@ -36,7 +36,6 @@
 #include "csymtab.h"
 #include "cinstance.h"
 #include "crule.h"
-#include "cexception.h"
 
 class CBus;
 
@@ -57,7 +56,6 @@ private:
     list<CRule*>     rules;
     list<CBus*>      ports;
     list<CBus*>      busses;
-    list<CException*>    exceptions;
 public:
 	static Decl_t DeclType() { return eMODULE; };
 	/**
@@ -88,10 +86,6 @@ public:
 	 * Add instance to module
 	 */
 	void Add( CInstance* instance ) { instances.push_back( instance ); }
-        /**
-	 * Add exception to module
-	 */
-	void Add( CException* e ) { exceptions.push_back( e ); }
 	/*
 	 * add rule
 	 */

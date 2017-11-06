@@ -34,7 +34,6 @@
 #include "cinstance.h"
 #include "cvcref.h"
 #include "crule.h"
-#include "cexception.h"
 
 
 extern int yylex();
@@ -77,7 +76,7 @@ template<typename T> T* CreateVariable( CSymbol* sym, bool unique, T* ) {
 };
 
 %token <symbol> SYMBOL
-%token '{' '}' '.' ';' ',' BUS VC CHECK RUN MODULE ARROW IGNORE FROM
+%token '{' '}' '.' ';' ',' BUS VC MODULE ARROW 
 
 %type <vcref> port_spec
 %type <vc> vc_name
@@ -100,8 +99,6 @@ description:
 ;
 
 statement: bus_definition
-	| check_statement
-	| run_statement
 	| module
 ;
 
@@ -144,14 +141,6 @@ port_spec:  bus_name_ref
 	{ $$ = new(declHeap) CVcRef( $1, $3, &loc ); }
 	;	
 
-check_statement: CHECK module_name_ref ';'
-	{ model.Check( $2 ); }
-	;
-
-run_statement: RUN module_name_ref ';'
-	{ model.Run( $2 ); }
-	;
-
 module_statements:
 	| module_statements module_statement
 	;
@@ -191,12 +180,6 @@ module_statement:
 	{ 
 	    CRule* r = new(declHeap) CRule( $1, $3, &loc );
 	    currentModule->Add( r );
-	}
-	| IGNORE port_spec FROM module_name_ref ';'
-        {
-	    CException* e = new(declHeap) CException( $2, $4, &loc );
-	    currentModule->Add( e );
-		
 	}
         | bus_type_ref ':' bus_name ';'
         {
