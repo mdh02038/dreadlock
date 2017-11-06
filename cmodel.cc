@@ -51,17 +51,12 @@ void CModel::Build( const string& topModuleName )
         for( list<CBusType*>::const_iterator btp=busses.begin(); btp!=busses.end(); ++btp  ) {
 	    (*btp)->Validate( symtab );
 	}
-	// bus rule references
-	// model rule references
-	// exception references
-	// port list match
-	// check/run model names are valid
-	// check for model recursion
-	// rules are consistant
-	// bus/wire connectivity
-	// unconnected busses
-	// non-point to point connections
-	// instance refs use valid models
+	
+	/*
+	 * ??? mdh - add more checks
+	 * - connections are point to point
+	 * - no unused busses
+	 */
 
 	// collect top level models
 	if( topModuleName == "" ) {
