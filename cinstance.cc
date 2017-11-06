@@ -63,6 +63,22 @@ void CInstance::Copy( CObstack* heap, CInstance& bus )
 }
 
 /****************************************************
+	Validate 
+*****************************************************/
+void CInstance::Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab )
+{
+    CModule* m = CDecl::Resolve<CModule>( gsymtab, moduleName );
+    if( !m ) {
+	error( GetCoord(), "module '%s' is not defined", moduleName->GetName() );
+	return;
+    }
+    for( list<CPortConn*>::const_iterator pc = portConnections.begin();
+		pc != portConnections.end(); ++pc ) {
+	(*pc)->Validate( gsymtab, lsymtab, m->Symtab() );
+    }
+}
+
+/****************************************************
 	Dump
 *****************************************************/
 void	CInstance::Dump( FILE* f )

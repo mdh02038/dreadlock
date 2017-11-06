@@ -47,6 +47,7 @@ class CPortConn: public CDecl
 {
 private:
     CSymbol* external;
+    CSymbol* nc;
 public:
 	static Decl_t DeclType() { return ePORTCONN; };
 	/**
@@ -71,6 +72,7 @@ public:
  	 * return external symbol
 	 */
 	CSymbol* External() { return external; }
+        void Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab, CSymtab<CDecl> msymtab );
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

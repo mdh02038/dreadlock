@@ -149,7 +149,10 @@ int main( int argc, const char** argv ) {
 	    f = stdout;
 	} else {
 	    f = fopen( outputFilename.c_str(), "w" );
-	    ASSERT( f );
+	    if( !f ) {
+                fprintf( stderr, "Error: could not open file '%s' for writting\n", outputFilename.c_str() );
+	        exit(1);
+	    }
         }
 	model.DumpAlloy( f );
     }

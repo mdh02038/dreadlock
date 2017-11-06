@@ -35,12 +35,22 @@
 #include "cbus.h"
 #include "cportconn.h"
 
+#define ERROR(args...) error(args); exit(1)
+
 extern CObstack* declHeap;
 /*
  * build model
  */
 void CModel::Build( const string& topModuleName )
 {
+	// validate all modules
+	for( list<CModule*>::const_iterator m = modules.begin(); m != modules.end(); ++m ) {
+	    (*m)->Validate( symtab );
+	}
+	// validate all bus types
+        for( list<CBusType*>::const_iterator btp=busses.begin(); btp!=busses.end(); ++btp  ) {
+	    (*btp)->Validate( symtab );
+	}
 	// bus rule references
 	// model rule references
 	// exception references
@@ -55,16 +65,19 @@ void CModel::Build( const string& topModuleName )
 
 	// collect top level models
 	if( topModuleName == "" ) {
-	    ASSERT( false );
             topLevelModules = CollectTopLevelModules();	
+	    if( topLevelModules.size() != 1 ) {
+		error( NULL, "only one top level module is allowed" );
+	    }
 	} else {
-            CModule* m = CModel::Resolve<CModule>( symtab, CSymbol::Lookup( topModuleName.c_str() ) );
-	    ASSERT( m );
+            CModule* m = CDecl::Resolve<CModule>( symtab, CSymbol::Lookup( topModuleName.c_str() ) );
+	    if( !m ) {
+	         error( NULL, "top level module '%s' does not exist", topModuleName.c_str() );
+		 return;
+	    }
 	    topLevelModules.push_back( m );
 	}
 	
-	checks.clear();
-	runs.clear();
 	for( list<CModule*>::const_iterator mp = topLevelModules.begin(); mp != topLevelModules.end(); ++mp ) {
 	    checks.push_back( (*mp)->GetSymbol() );
 	    runs.push_back( (*mp)->GetSymbol() );
@@ -153,11 +166,11 @@ void CModel::DumpAlloy( FILE* f )
     map<string,map<string,set<string> > > deps;
     map<string,map<string,set<string> > > rdeps;
     for( list<CInstance*>::const_iterator up = instances.begin(); up != instances.end(); ++up ) {
-        CModule* m = CModel::Resolve<CModule>( symtab, (*up)->ModuleName() );
-	ASSERT( m );
+        CModule* m = CDecl::Resolve<CModule>( symtab, (*up)->ModuleName() );
+	ASSERT( m ); // OK
 	string instanceName = (*up)->GetName();
 	for( list<CBus*>::const_iterator bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
-	    CBusType* busType = CModel::Resolve<CBusType>( symtab, (*bp)->BusType() );
+	    CBusType* busType = CDecl::Resolve<CBusType>( symtab, (*bp)->BusType() );
 	    ASSERT( busType );
 	    string busName = (*bp)->GetName();
 	    list<CVc*>::const_iterator vp;
@@ -175,13 +188,13 @@ void CModel::DumpAlloy( FILE* f )
 	    string lhs_vc = (*rp)->LHS()->Vc()->GetName();;
 	    string rhs_bus = (*rp)->RHS()->Bus()->GetName();;
 	    string rhs_vc = (*rp)->RHS()->Vc()->GetName();;
-            CBus* lb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->LHS()->Bus() );
+            CBus* lb = CDecl::Resolve<CBus>( m->Symtab(), (*rp)->LHS()->Bus() );
 	    ASSERT( lb );
-	    CBusType* lbt = CModel::Resolve<CBusType>( symtab, lb->BusType() );
+	    CBusType* lbt = CDecl::Resolve<CBusType>( symtab, lb->BusType() );
 	    ASSERT( lbt );
-            CBus* rb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->RHS()->Bus() );
+            CBus* rb = CDecl::Resolve<CBus>( m->Symtab(), (*rp)->RHS()->Bus() );
 	    ASSERT( rb );
-	    CBusType* rbt = CModel::Resolve<CBusType>( symtab, rb->BusType() );
+	    CBusType* rbt = CDecl::Resolve<CBusType>( symtab, rb->BusType() );
 	    ASSERT( rbt );
 	    if( lhs_vc == "*" && rhs_vc == "*" ) {
 		// Vector dependency
@@ -274,13 +287,13 @@ void CModel::DumpAlloy( FILE* f )
     string directions[2] = { "IN", "OUT" };
     list<CInstance*>::const_iterator ip;
     for( ip = instances.begin(); ip != instances.end(); ++ip ) {
-	CModule* m = CModel::Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	CModule* m = CDecl::Resolve<CModule>( symtab, (*ip)->ModuleName() );
 	ASSERT( m );
 	string instanceName = (*ip)->GetName();
         fprintf( f, "\n// wire sigs for %s \n", instanceName.c_str() );
 	list<CBus*>::const_iterator bp;
 	for( bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
-	    CBusType* busType = CModel::Resolve<CBusType>( symtab, (*bp)->BusType() );
+	    CBusType* busType = CDecl::Resolve<CBusType>( symtab, (*bp)->BusType() );
 	    ASSERT( busType );
 	    string busName = (*bp)->GetName();
 	    list<CVc*>::const_iterator vp;
@@ -359,7 +372,7 @@ void CModel::DumpAlloy( FILE* f )
      */
     fprintf( f, "\n// instance rules\n" );
     for( up = instances.begin(); up != instances.end(); ++up ) {
-        CModule* m = CModel::Resolve<CModule>( symtab, (*up)->ModuleName() );
+        CModule* m = CDecl::Resolve<CModule>( symtab, (*up)->ModuleName() );
 	ASSERT( m );
         fprintf( f, "\n// %s rules\n", (*up)->GetName() );
         fprintf( f, "fact {\n" );
@@ -393,16 +406,16 @@ void CModel::DumpAlloy( FILE* f )
         vector<ConnectionInfo> noConnects;
 
         // find all connections
-        CModule* m = CModel::Resolve<CModule>( symtab, (*currentInstance)->ModuleName() );
+        CModule* m = CDecl::Resolve<CModule>( symtab, (*currentInstance)->ModuleName() );
 	ASSERT( m );
         for( ip = m->Instances().begin(); ip != m->Instances().end(); ++ip ) {
             ASSERT( m );
             list<CPortConn*>::const_iterator pcp;
             for( pcp = (*ip)->PortConnections().begin(); pcp != (*ip)->PortConnections().end(); ++pcp ) {
                 ConnectionInfo ci;
-	        CModule* definingModule = CModel::Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	        CModule* definingModule = CDecl::Resolve<CModule>( symtab, (*ip)->ModuleName() );
 	        ASSERT( definingModule );
-	        CBus* b = CModel::Resolve<CBus>( definingModule->Symtab(), (*pcp)->Internal() ); 
+	        CBus* b = CDecl::Resolve<CBus>( definingModule->Symtab(), (*pcp)->Internal() ); 
 	        ASSERT( b );
                 ci.instance = *ip;
                 ci.name     = (*pcp)->Internal();
@@ -428,15 +441,15 @@ void CModel::DumpAlloy( FILE* f )
                 ASSERT( false );
             } else if( mcip->second.size() == 2 ) {
               string bus1 = mcip->second[0].name->GetName();
-	      CBus* b1 = CModel::Resolve<CBus>( msymtab, mcip->first ); 
+	      CBus* b1 = CDecl::Resolve<CBus>( msymtab, mcip->first ); 
 	      ASSERT( b1 );
               string instance1 = mcip->second[0].instance->GetName();
               string bus2 = mcip->second[1].name->GetName();
-	      CBus* b2 = CModel::Resolve<CBus>( msymtab, mcip->first ); 
+	      CBus* b2 = CDecl::Resolve<CBus>( msymtab, mcip->first ); 
 	      ASSERT( b2 );
               string instance2 = mcip->second[1].instance->GetName();
 	      ASSERT( b1->BusType() == b2->BusType() );
-	      CBusType* bt = CModel::Resolve<CBusType>( symtab, b1->BusType() );
+	      CBusType* bt = CDecl::Resolve<CBusType>( symtab, b1->BusType() );
 	      ASSERT( bt );
 	      ASSERT( bt->GetSymbol() == mcip->second[0].busType );
 	      ASSERT( bt->GetSymbol() == mcip->second[1].busType );
@@ -488,12 +501,12 @@ const list<CModule*> CModel::CollectTopLevelModules()
     set<CModule*> runSet;
     
     for( list<CSymbol*>::const_iterator mp = checks.begin(); mp != checks.end(); ++mp ) {
-        CModule* m = CModel::Resolve<CModule>( symtab, *mp );
+        CModule* m = CDecl::Resolve<CModule>( symtab, *mp );
 	ASSERT( m );
 	checkSet.insert( m );
     }
     for( list<CSymbol*>::const_iterator mp = runs.begin(); mp != runs.end(); ++mp ) {
-        CModule* m = CModel::Resolve<CModule>( symtab, *mp );
+        CModule* m = CDecl::Resolve<CModule>( symtab, *mp );
 	ASSERT( m );
 	runSet.insert( m );
     }
@@ -502,20 +515,18 @@ const list<CModule*> CModel::CollectTopLevelModules()
     for( mp = modules.begin(); mp != modules.end(); ++mp ) {
 	list<CInstance*>::const_iterator ip;
 	for( ip = (*mp)->Instances().begin(); ip != (*mp)->Instances().end(); ++ip ) {
-	    CModule* m = CModel::Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	    CModule* m = CDecl::Resolve<CModule>( symtab, (*ip)->ModuleName() );
+	    ASSERT( m );
 	    moduleRefCount[m]++;
 	}
     }
     list<CModule*> topModules;
     /*
-     * top level modules must be referred to by a check or run clause and
+     * top level modules must have no ports
      * must have no ports and must no be instantiated by other modules
      */
     for( mp = modules.begin(); mp != modules.end(); ++mp ) {
-	if( moduleRefCount[*mp] == 0 &&
-	    (checkSet.count(*mp) || runSet.count(*mp)) ) {
-	    // top level models must have no ports
-	    ASSERT( (*mp)->Ports().size() == 0 );
+	if( moduleRefCount[*mp] == 0 && (*mp)->Ports().size() == 0 ) {
 	    topModules.push_back( *mp );
 	}
     }
@@ -540,7 +551,8 @@ void Elaborate( string prefix, CModule* m, list<CInstance*>& instances, set<CSym
 	    instance->Add( pc );
 	}
 	instances.push_back( instance );
-	CModule* currentModule = CModel::Resolve<CModule>( symbolTable, (*ip)->ModuleName() );
+	CModule* currentModule = CDecl::Resolve<CModule>( symbolTable, (*ip)->ModuleName() );
+	if( !currentModule ) return;
         list<CBus*>::const_iterator bp;
 	for( bp = currentModule->Ports().begin(); bp != currentModule->Ports().end(); ++bp ) {
 	    ports.insert( (*bp)->GetSymbol() );	

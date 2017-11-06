@@ -63,8 +63,8 @@ extern Coord loc;
 [a-zA-Z][a-zA-Z0-9_]*	{yylval.symbol = CSymbol::Lookup(yytext); return SYMBOL;}
 "/*"		{ BEGIN COMMENT; }
 <COMMENT>[^*\n]* 	{}
-<COMMENT>"*"+[^*/\n]* 	{ NEW_LINE; }
-<COMMENT>\n		{} 
+<COMMENT>"*"+[^*/\n]* 	{ }
+<COMMENT>\n		{ NEW_LINE; } 
 <COMMENT>"*"+"/"	{ BEGIN INITIAL; }
 \n		{ yymore(); NEW_LINE; }
 .		{ return yytext[0]; } 

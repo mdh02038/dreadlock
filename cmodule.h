@@ -56,6 +56,7 @@ private:
     list<CRule*>     rules;
     list<CBus*>      ports;
     list<CBus*>      busses;
+    bool	     validated;
 public:
 	static Decl_t DeclType() { return eMODULE; };
 	/**
@@ -110,6 +111,10 @@ public:
 	 * return rule list
 	 */
 	const list<CRule*>& Rules() { return rules; }
+	/*
+	 * validate module
+	 */
+	void Validate( CSymtab<CDecl>& symtab );
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

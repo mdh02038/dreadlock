@@ -1,4 +1,5 @@
 all: cases
+
 cases:
 	mkdir -p regression
 	../dreadlock -o regression/case1.als -t case1 test1.dlk

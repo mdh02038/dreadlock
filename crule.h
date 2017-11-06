@@ -40,14 +40,22 @@ private:
 	Coord	   loc;		  ///< file coordinates of declaration
 	CVcRef*	   lhs;
 	CVcRef*	   rhs;
+        bool 	   validated;
 public:
 	/*
 	 * constructor
 	 */
 	CRule( CVcRef* lhs, CVcRef* rhs, Coord* loc ) :
-		loc(*loc), lhs(lhs), rhs(rhs) {}
+		validated(false), loc(*loc), lhs(lhs), rhs(rhs) {}
         CVcRef* LHS() { return lhs; }
         CVcRef* RHS() { return rhs; }
+        void Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab )
+	{
+	    if( validated ) return;
+	    validated = true;
+	    lhs->Validate( gsymtab, lsymtab );
+	    rhs->Validate( gsymtab, lsymtab );
+	}
 	void Dump( FILE* f ) {
 	    fprintf( f, "rule: " );
 	    lhs->Dump( f );

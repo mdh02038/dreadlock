@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <vector>
 #include <list>
+#include "csymtab.h"
 #include "csymbol.h"
 
 class CDecl;
@@ -70,8 +71,6 @@ const char* declName[] = {
 #else
 extern char* declName[];
 #endif
-
-
 
 /**
  * Base class for describing declaration objects
@@ -179,6 +178,17 @@ private:
  	 * disable copy constructor
  	 */
 	CDecl( const CDecl& o );
+
+
+public:
+        template<typename T> static T* Resolve( CSymtab<CDecl> symtab, CSymbol* symbol )
+        {
+            CDecl* d = symtab.Lookup( symbol );
+            if( !d || d->GetType() != T::DeclType() ) {
+                return (T*)NULL;
+            }
+            return (T*)d;
+        }
 
 };
 

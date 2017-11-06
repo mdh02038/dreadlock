@@ -87,6 +87,7 @@ public:
 	 * get module type
 	 */
 	CSymbol*  ModuleName() { return moduleName; }
+        void Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab );
 	/**
  	 * Dump Bus info to file.
  	 * \param f file descriptor.

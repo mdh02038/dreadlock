@@ -28,6 +28,7 @@
  */
 
 #include "cportconn.h"
+#include "cbus.h"
 
 
 
@@ -36,7 +37,7 @@
 	Constructor
 *****************************************************/
 CPortConn::CPortConn( CSymbol* name, CSymbol* external, Coord* aLoc ) 
-    : external(external), CDecl( name, aLoc, ePORTCONN ){
+    : nc( CSymbol::Lookup("") ), external(external), CDecl( name, aLoc, ePORTCONN ){
 }
 
 /****************************************************
@@ -58,6 +59,22 @@ CDecl* CPortConn::Clone( CObstack* heap )
 void CPortConn::Copy( CObstack* heap, CPortConn& portconn )
 {
     CDecl::Copy( heap, portconn );
+}
+/****************************************************
+	Validate
+*****************************************************/
+void CPortConn::Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab, CSymtab<CDecl> msymtab )
+{
+    if( external != nc ) {
+	CBus* b = CDecl::Resolve<CBus>( lsymtab, external );
+	if( !b ) {
+	    error( GetCoord(), "port '%s' connection is not defined", external->GetName() );
+	}
+    }
+    CBus* b = CDecl::Resolve<CBus>( msymtab, GetSymbol() );
+    if( !b ) {
+	    error( GetCoord(), "module port '%s' is not defined", GetName() );
+    }
 }
 
 /****************************************************

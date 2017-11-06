@@ -38,7 +38,7 @@
 	Constructor
 *****************************************************/
 CModule::CModule( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eMODULE ){
+    : CDecl( name, aLoc, eMODULE ), validated( false) {
 }
 
 /****************************************************
@@ -61,6 +61,26 @@ void CModule::Copy( CObstack* heap, CModule& module )
 {
     CDecl::Copy( heap, module );
     symtab = module.symtab;
+}
+/****************************************************
+	Validate
+*****************************************************/
+void CModule::Validate( CSymtab<CDecl>& gsymtab )
+{
+    if( validated ) return;
+    validated = true;
+    for( list<CBus*>::const_iterator b = busses.begin(); b != busses.end(); ++b ) {
+	(*b)->Validate( gsymtab );	
+    }
+    for( list<CBus*>::const_iterator p = ports.begin(); p != ports.end(); ++p ) {
+	(*p)->Validate( gsymtab );	
+    }
+    for( list<CRule*>::const_iterator r = rules.begin(); r != rules.end(); ++r ) {
+	(*r)->Validate( gsymtab, symtab );	
+    }
+    for( list<CInstance*>::const_iterator i = instances.begin(); i != instances.end(); ++i ) {
+	(*i)->Validate( gsymtab, symtab );	
+    }
 }
 
 /****************************************************

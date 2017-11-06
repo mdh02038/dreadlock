@@ -49,6 +49,7 @@ class CBus: public CDecl
 private:
     CSymbol*  busType;
     bool      isPort;
+    bool      validated;
 public:
 	static Decl_t DeclType() { return eBUS; };
 	/**
@@ -71,6 +72,10 @@ public:
          * Mark as port
 	 */
         void IsPort() { isPort = true; }
+        /*
+	 * validate bus
+	 */
+	void Validate( CSymtab<CDecl>& gsymtab );
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.

@@ -25,4 +25,8 @@ dreadlock: lex.yy.cc parse.tab.cc parse.tab.hh $(CFILES)
 
 clean:
 	@rm -f dreadlock parse.tab.cc lex.yy.cc parse.tab.hh parse.output
+	${MAKE} -C tests clean
+
+check: dreadlock
+	${MAKE} -C tests cases
 

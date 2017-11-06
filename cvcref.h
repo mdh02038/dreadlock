@@ -32,6 +32,10 @@
 #define CVCREF_H
 
 #include "csymbol.h"
+#include "cbus.h"
+#include "cbustype.h"
+#include "cvc.h"
+#include "message.h"
 
 
 class CVcRef : public CObject
@@ -40,14 +44,41 @@ private:
 	Coord	   loc;		  ///< file coordinates of declaration
 	CSymbol*   bus;	  	  ///< symbol for bus (may be *)
 	CSymbol*   vc;	  	  ///< symbol for vc
+        bool	   validated;
+	CSymbol*   wildcard;
 public:
 	/*
 	 * constructor
 	 */
 	CVcRef( CSymbol* bus, CSymbol* vc, Coord* loc ) :
-		loc(*loc), bus(bus), vc(vc) {}
+		wildcard(CSymbol::Lookup("*")), validated(false), loc(*loc), bus(bus), vc(vc) {}
         CSymbol* Bus() { return bus; }
         CSymbol* Vc() { return vc; }
+        void Validate( CSymtab<CDecl> gsymtab, CSymtab<CDecl> lsymtab )
+	{
+	    if( validated ) return;
+	    validated = true;
+	    if( bus == wildcard ) {
+		
+	    } else {
+	        CBus* b = CDecl::Resolve<CBus>( lsymtab, bus );
+	        if( !b ) {
+		    error( &loc, "bus '%s' is not declared", bus->GetName() );
+		    return;
+	 	}
+		CBusType* bt = CDecl::Resolve<CBusType>( gsymtab, b->BusType() );
+	        if( !bt ) {
+		    error( &loc, "bus type '%s' is not declared", b->BusType()->GetName() );
+		    return;
+	 	}
+		lsymtab = bt->Symtab();
+	    }
+	    CVc* v = CDecl::Resolve<CVc>( lsymtab, vc );
+	    if( !v && vc != wildcard ) {
+	        error( &loc, "vc '%s' is not declared", vc->GetName() );
+	    }
+		
+	}
 	void Dump( FILE* f ) {
 	    fprintf( f, "%s.%s", bus->GetName(), vc->GetName() );
 	}

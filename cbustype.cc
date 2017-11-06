@@ -37,7 +37,7 @@
 	Constructor
 *****************************************************/
 CBusType::CBusType( CSymbol* name, Coord* aLoc ) 
-    : CDecl( name, aLoc, eBUS_TYPE ){
+    : validated(false), CDecl( name, aLoc, eBUS_TYPE ){
 }
 
 /****************************************************
@@ -60,6 +60,18 @@ void CBusType::Copy( CObstack* heap, CBusType& busType )
 {
     CDecl::Copy( heap, busType );
     symtab = busType.symtab;
+}
+
+/****************************************************
+	Validate
+*****************************************************/
+void CBusType::Validate( CSymtab<CDecl> gsymtab )
+{
+    if( validated ) return;
+    validated = true;
+    for( list<CRule*>::const_iterator r = rules.begin(); r != rules.end(); ++r ) {
+	(*r)->Validate( gsymtab, symtab );	
+    }
 }
 
 /****************************************************

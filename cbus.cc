@@ -37,7 +37,7 @@
 	Constructor
 *****************************************************/
 CBus::CBus( CSymbol* name, Coord* aLoc ) 
-    : isPort(false), busType(NULL), CDecl( name, aLoc, eBUS ){
+    : validated(false), isPort(false), busType(NULL), CDecl( name, aLoc, eBUS ){
 }
 
 /****************************************************
@@ -59,6 +59,19 @@ CDecl* CBus::Clone( CObstack* heap )
 void CBus::Copy( CObstack* heap, CBus& bus )
 {
     CDecl::Copy( heap, bus );
+}
+
+/****************************************************
+	Validate
+*****************************************************/
+void CBus::Validate( CSymtab<CDecl>& gsymtab )
+{
+    if( validated ) return;
+    validated = true;
+    CBusType* bt = CDecl::Resolve<CBusType>( gsymtab, busType );
+    if( !bt ) {
+	error( GetCoord(), "bus type '%s' is not defined", busType->GetName() );
+    }
 }
 
 /****************************************************

@@ -53,6 +53,7 @@ private:
     CSymtab<CDecl> symtab;
     list<CVc*>     vcs;
     list<CRule*>   rules;
+    bool	   validated;
 public:
 	static Decl_t DeclType() { return eBUS_TYPE; };
 	/**
@@ -77,6 +78,7 @@ public:
 	 * \return  symbol table
 	 */
 	CSymtab<CDecl>& Symtab() { return symtab; }
+        void Validate( CSymtab<CDecl> gsymtab );
 	/**
  	 * Create a clone of this declaration.
  	 * \param heap heap to use for allocation.

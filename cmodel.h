@@ -89,14 +89,7 @@ public:
  	 * dump model to file
  	 */
 	void Dump( FILE* f );
-        template<typename T> static T* Resolve( CSymtab<CDecl> symtab, CSymbol* symbol )
-        {
-	    CDecl* d = symtab.Lookup( symbol );
-	    if( !d || d->GetType() != T::DeclType() ) {
-	        return (T*)NULL;
-	    }
-	    return (T*)d;
-	}
+
 protected:
         const list<CModule*> CollectTopLevelModules();	
 	const list<CInstance*> FlattenAndExtractInstances( const list<CModule*>& moduleList );

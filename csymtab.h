@@ -32,6 +32,7 @@
 #define CSYMTAB_HPP
 
 #include "defs.h"
+#include "message.h"
 #include "cdecl.h"
 #include <map>
 #include <list>
