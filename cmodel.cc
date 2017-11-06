@@ -115,7 +115,17 @@ const char* boilerPlate =
     "// utility functions\n"
     "pred irreflexive[rel: Wire->Wire]           { no iden & rel }\n"
     "pred acyclic[rel: Wire->Wire]               { irreflexive[^rel] }\n"
-    "fact { all disj p1,p2: Wire | p1->p2 in cdep <=> p1->p2 in dep and  some p2.(^dep) :> p1 }"
+    "fact { all disj p1,p2: Wire | p1->p2 in cdep <=> p1->p2 in dep and  some p2.(^dep) :> p1 }\n"
+    "pred noconnect[ b: Bus, u: Unit ] {\n"
+    "    all v: Vc, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]\n"
+    "}\n"
+    "\n"
+    "pred connect[ b1: Bus, u1: Unit, b2: Bus, u2: Unit ] {\n"
+    "    all v: Vc | let p = u1.~unit & b1.~bus & v.~vc & OUT.~direction | some p => dep[p] = \n"
+    "					u2.~unit & b2.~bus & v.~vc & IN.~direction\n"
+    "    all v: Vc | let p = u2.~unit & b2.~bus & v.~vc & OUT.~direction | some p => dep[p] = \n"
+    "					u1.~unit & b1.~bus & v.~vc & IN.~direction\n"
+    "}\n"
 ;
 
 /*
@@ -123,6 +133,64 @@ const char* boilerPlate =
  */
 void CModel::DumpAlloy( FILE* f )
 {
+    /*
+     * calculate port dependencies
+     */
+    map<string,map<string,set<string> > > deps;
+    map<string,map<string,set<string> > > rdeps;
+    for( list<CInstance*>::const_iterator up = instances.begin(); up != instances.end(); ++up ) {
+        CModule* m = CModel::Resolve<CModule>( symtab, (*up)->ModuleName() );
+	ASSERT( m );
+	string instanceName = (*up)->GetName();
+	for( list<CBus*>::const_iterator bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
+	    CBusType* busType = CModel::Resolve<CBusType>( symtab, (*bp)->BusType() );
+	    ASSERT( busType );
+	    string busName = (*bp)->GetName();
+	    list<CVc*>::const_iterator vp;
+	    for( vp = busType->Vcs().begin(); vp != busType->Vcs().end(); ++vp ) {
+	        string vcName = (*vp)->GetName();
+	        string portNameIn = (*up)->GetName() + string("_") + busName + "_" + vcName + string("_IN");
+		deps[instanceName][portNameIn].clear();
+	        string portNameOut = (*up)->GetName() + string("_") + busName + "_" + vcName + string("_OUT");
+		rdeps[instanceName][portNameOut].clear();
+            }
+        }
+	for( list<CRule*>::const_iterator rp = m->Rules().begin(); rp != m->Rules().end(); ++rp ) {
+	    // ??? mdh - validate these bus/vc combinations are valid
+	    string lhs_bus = (*rp)->LHS()->Bus()->GetName();;
+	    string lhs_vc = (*rp)->LHS()->Vc()->GetName();;
+	    string rhs_bus = (*rp)->RHS()->Bus()->GetName();;
+	    string rhs_vc = (*rp)->RHS()->Vc()->GetName();;
+            CBus* lb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->LHS()->Bus() );
+	    ASSERT( lb );
+	    CBusType* lbt = CModel::Resolve<CBusType>( symtab, lb->BusType() );
+	    ASSERT( lbt );
+            CBus* rb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->RHS()->Bus() );
+	    ASSERT( rb );
+	    CBusType* rbt = CModel::Resolve<CBusType>( symtab, rb->BusType() );
+	    ASSERT( rbt );
+	    if( lhs_vc == "*" && rhs_vc == "*" ) {
+		// Vector dependency
+  	        ASSERT( lbt == rbt );
+		for( list<CVc*>::const_iterator vp = lbt->Vcs().begin(); vp != lbt->Vcs().end(); ++vp ) {
+	            string lhs = string((*up)->GetName()) + "_" + lhs_bus + "_" + (*vp)->GetName() + string("_IN");
+	            string rhs = string((*up)->GetName()) + "_" + rhs_bus + "_" + (*vp)->GetName() + string("_OUT");
+	            deps[instanceName][lhs].insert(rhs); 
+	            rdeps[instanceName][rhs].insert(lhs); 
+		}
+	    } else if( lhs_vc != "*" && rhs_vc != "*" ) {
+		// scalar dependency
+	        string lhs = string((*up)->GetName()) + "_" + lhs_bus + "_" + lhs_vc + string("_IN");
+	        string rhs = string((*up)->GetName()) + "_" + rhs_bus + "_" + rhs_vc + string("_OUT");
+	        deps[instanceName][lhs].insert(rhs); 
+	        rdeps[instanceName][rhs].insert(lhs); 
+	    } else {
+		// one to many or many to one dependency
+		// ??? mdh - add hybrid checks
+	        ASSERT( false );
+	    }
+        }
+    }
     /*
      * dump out common sigs and functions
      */
@@ -207,8 +275,14 @@ void CModel::DumpAlloy( FILE* f )
 	        for( unsigned d = 0; d < 2; ++d ) {
 	            string direction = directions[d];
 	            string portName = instanceName + "_" + busName + "_" + vcName + "_" + direction;
+		    if( direction == "IN" && deps[instanceName][portName].size() == 0 ) {
+			fprintf( f, "// " );
+		    }
+		    if( direction == "OUT" && rdeps[instanceName][portName].size() == 0 ) {
+			fprintf( f, "// " );
+		    }
                     fprintf( f, "one sig %s extends Wire {} { unit=%s bus=%s vc=%s direction=%s }\n", 
-                          portName.c_str(), instanceName.c_str(), busName.c_str(), vcName.c_str(), direction.c_str() );
+                              portName.c_str(), instanceName.c_str(), busName.c_str(), vcName.c_str(), direction.c_str() );
 	        }
             }
         }
@@ -220,16 +294,15 @@ void CModel::DumpAlloy( FILE* f )
     fprintf( f, "\n\n// bus connection rules" );
     for( btp=busses.begin(); btp!=busses.end(); ++btp  ) {
         // ??? mdh fix this to create bus specific connection rules
-	map<CSymbol*,set<CSymbol*> > deps;
+	map<CSymbol*,set<CSymbol*> > busDeps;
         fprintf( f, "// %s connection rules", (*btp)->GetName() );
         fprintf( f, "\npred %s_noconnect[ b: Bus, u: Unit ] {\n", (*btp)->GetName() );
 	for( list<CVc*>::const_iterator vcp = (*btp)->Vcs().begin(); vcp != (*btp)->Vcs().end(); ++vcp) {
             fprintf( f, "    all v: %s, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]\n", (*vcp)->GetName() );
-	    deps[(*vcp)->GetSymbol()].insert( (*vcp)->GetSymbol() );
+	    busDeps[(*vcp)->GetSymbol()].insert( (*vcp)->GetSymbol() );
 	}
         fprintf( f, "}\n" );
         fprintf( f, "\n" );
-/*
 	for( list<CRule*>::const_iterator rp = (*btp)->Rules().begin(); rp != (*btp)->Rules().end(); ++rp ) {
 	    // ??? mdh - validate these bus/vc combinations are valid
 	    CSymbol* lhs_bus = (*rp)->LHS()->Bus();
@@ -237,26 +310,32 @@ void CModel::DumpAlloy( FILE* f )
 	    CSymbol* rhs_bus = (*rp)->RHS()->Bus();
 	    CSymbol* rhs_vc = (*rp)->RHS()->Vc();
 	    ASSERT( !strcmp( lhs_bus->GetName(), "*" ) && !strcmp( rhs_bus->GetName(), "*" ) );
-	    deps[lhs_vc].insert( rhs_vc );
+	    busDeps[lhs_vc].insert( rhs_vc );
 	}
-*/
         fprintf( f, "\npred %s_connect[ b1: Bus, u1: Unit, b2: Bus, u2: Unit ] {\n", (*btp)->GetName() );
 	for( list<CVc*>::const_iterator vcp = (*btp)->Vcs().begin(); vcp != (*btp)->Vcs().end(); ++vcp) {
 	    CSymbol* lhs_vc = (*vcp)->GetSymbol();
 	    string rhs;
-	    for( set<CSymbol*>::const_iterator sp = deps[lhs_vc].begin(); sp != deps[lhs_vc].end(); ++sp ) {
-		if( sp != deps[lhs_vc].begin() ) {
+	    for( set<CSymbol*>::const_iterator sp = busDeps[lhs_vc].begin(); sp != busDeps[lhs_vc].end(); ++sp ) {
+		if( sp != busDeps[lhs_vc].begin() ) {
 		    rhs += " + ";
 		}
 		rhs += (*sp)->GetName();
 	    }
-	    CSymbol* rhs_vc = *(deps[lhs_vc].begin());
-            fprintf( f, "    all v1: %s, v2: %s | let p = u1.~unit & b1.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
-				lhs_vc->GetName(), rhs.c_str() );
-            fprintf( f, "				u2.~unit & b2.~bus & v2.~vc & IN.~direction\n" );
-            fprintf( f, "    all v1: %s, v2: %s | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
-				lhs_vc->GetName(), rhs.c_str() );
-            fprintf( f, "					u1.~unit & b1.~bus & v2.~vc & IN.~direction\n" );
+	    CSymbol* rhs_vc = *(busDeps[lhs_vc].begin());
+//            fprintf( f, "    all v1: %s, v2: %s | let p = u1.~unit & b1.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
+//				lhs_vc->GetName(), rhs.c_str() );
+//            fprintf( f, "				u2.~unit & b2.~bus & v2.~vc & IN.~direction\n" );
+//            fprintf( f, "    all v1: %s, v2: %s | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
+//				lhs_vc->GetName(), rhs.c_str() );
+//            fprintf( f, "					u1.~unit & b1.~bus & v2.~vc & IN.~direction\n" );
+
+            fprintf( f, "    all v1: %s | let p = u1.~unit & b1.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
+				lhs_vc->GetName() );
+            fprintf( f, "				u2.~unit & b2.~bus & (%s).~vc & IN.~direction\n", rhs.c_str() );
+            fprintf( f, "    all v1: %s | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = \n", 
+				lhs_vc->GetName() );
+            fprintf( f, "					u1.~unit & b1.~bus & (%s).~vc & IN.~direction\n", rhs.c_str() );
 	}
         fprintf( f, "}\n" );
     }
@@ -268,64 +347,20 @@ void CModel::DumpAlloy( FILE* f )
     for( up = instances.begin(); up != instances.end(); ++up ) {
         CModule* m = CModel::Resolve<CModule>( symtab, (*up)->ModuleName() );
 	ASSERT( m );
-	map<string,set<string> > deps;
-	for( list<CBus*>::const_iterator bp = m->Ports().begin(); bp != m->Ports().end(); ++bp ) {
-	    CBusType* busType = CModel::Resolve<CBusType>( symtab, (*bp)->BusType() );
-	    ASSERT( busType );
-	    string busName = (*bp)->GetName();
-	    list<CVc*>::const_iterator vp;
-	    for( vp = busType->Vcs().begin(); vp != busType->Vcs().end(); ++vp ) {
-	        string vcName = (*vp)->GetName();
-	        string portName = busName + "_" + vcName;
-		deps[portName].clear();
-            }
-        }
-	for( list<CRule*>::const_iterator rp = m->Rules().begin(); rp != m->Rules().end(); ++rp ) {
-	    // ??? mdh - validate these bus/vc combinations are valid
-	    string lhs_bus = (*rp)->LHS()->Bus()->GetName();;
-	    string lhs_vc = (*rp)->LHS()->Vc()->GetName();;
-	    string rhs_bus = (*rp)->RHS()->Bus()->GetName();;
-	    string rhs_vc = (*rp)->RHS()->Vc()->GetName();;
-            CBus* lb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->LHS()->Bus() );
-	    ASSERT( lb );
-	    CBusType* lbt = CModel::Resolve<CBusType>( symtab, lb->BusType() );
-	    ASSERT( lbt );
-            CBus* rb = CModel::Resolve<CBus>( m->Symtab(), (*rp)->RHS()->Bus() );
-	    ASSERT( rb );
-	    CBusType* rbt = CModel::Resolve<CBusType>( symtab, rb->BusType() );
-	    ASSERT( rbt );
-	    if( lhs_vc == "*" && rhs_vc == "*" ) {
-		// Vector dependency
-  	        ASSERT( lbt == rbt );
-		for( list<CVc*>::const_iterator vp = lbt->Vcs().begin(); vp != lbt->Vcs().end(); ++vp ) {
-	            string lhs = lhs_bus + "_" + (*vp)->GetName();
-	            string rhs = rhs_bus + "_" + (*vp)->GetName();;
-	            deps[lhs].insert(rhs); 
-		}
-	    } else if( lhs_vc != "*" && rhs_vc != "*" ) {
-		// scalar dependency
-	        string lhs = lhs_bus + "_" + lhs_vc;
-	        string rhs = rhs_bus + "_" + rhs_vc;
-	        deps[lhs].insert(rhs); 
-	    } else {
-		// one to many or many to one dependency
-		// ??? mdh - add hybrid checks
-	        ASSERT( false );
-	    }
-        }
         fprintf( f, "\n// %s rules\n", (*up)->GetName() );
         fprintf( f, "fact {\n" );
-	for( map<string,set<string> >::const_iterator sp = deps.begin(); sp != deps.end(); ++sp ) {
-	    string lhs = string((*up)->GetName()) + string("_") + sp->first + string("_IN");
+	string instanceName = (*up)->GetName();
+	for( map<string,set<string> >::const_iterator sp = deps[instanceName].begin(); sp != deps[instanceName].end(); ++sp ) {
+	    string lhs = sp->first;
 	    if( sp->second.size() == 0 ) {
-	        fprintf( f, "    no dep[%s]\n", lhs.c_str() );
+	        fprintf( f, "//    no dep[%s]\n", lhs.c_str() );
 	    } else {
 	        string rhs;
 	        for( set<string>::const_iterator stp = sp->second.begin(); stp != sp->second.end(); ++stp ) {
 	            if( stp != sp->second.begin() ) {
 	                rhs += " + ";
 	            }
-	            rhs += string((*up)->GetName()) + string("_") + *stp + string("_OUT"); 
+	            rhs += *stp; 
 	        }
 	        fprintf( f, "    dep[%s] =  %s\n", lhs.c_str(), rhs.c_str() );
 	    }
@@ -435,18 +470,38 @@ void CModel::DumpAlloy( FILE* f )
 
 const list<CModule*> CModel::CollectTopLevelModules()
 {
-    map<CModule*,unsigned long> moduleCount;
+    set<CModule*> checkSet;
+    set<CModule*> runSet;
+    
+    for( list<CSymbol*>::const_iterator mp = checks.begin(); mp != checks.end(); ++mp ) {
+        CModule* m = CModel::Resolve<CModule>( symtab, *mp );
+	ASSERT( m );
+	checkSet.insert( m );
+    }
+    for( list<CSymbol*>::const_iterator mp = runs.begin(); mp != runs.end(); ++mp ) {
+        CModule* m = CModel::Resolve<CModule>( symtab, *mp );
+	ASSERT( m );
+	runSet.insert( m );
+    }
+    map<CModule*,unsigned long> moduleRefCount;
     list<CModule*>::iterator mp;
     for( mp = modules.begin(); mp != modules.end(); ++mp ) {
 	list<CInstance*>::const_iterator ip;
 	for( ip = (*mp)->Instances().begin(); ip != (*mp)->Instances().end(); ++ip ) {
 	    CModule* m = CModel::Resolve<CModule>( symtab, (*ip)->ModuleName() );
-	    moduleCount[m]++;
+	    moduleRefCount[m]++;
 	}
     }
     list<CModule*> topModules;
+    /*
+     * top level modules must be referred to by a check or run clause and
+     * must have no ports and must no be instantiated by other modules
+     */
     for( mp = modules.begin(); mp != modules.end(); ++mp ) {
-	if( moduleCount[*mp] == 0 ) {
+	if( moduleRefCount[*mp] == 0 &&
+	    (checkSet.count(*mp) || runSet.count(*mp)) ) {
+	    // top level models must have no ports
+	    ASSERT( (*mp)->Ports().size() == 0 );
 	    topModules.push_back( *mp );
 	}
     }
