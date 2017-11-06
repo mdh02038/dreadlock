@@ -31,9 +31,9 @@ Running these lines in the test directory produces this:
 ../src/dreadlock -o regression/case6.als -t case6 test1.dlk
 ```
 
-#### [case1.als](test/golden/case1.als)
-#### [case2.als](test/golden/case2.als)
-#### [case3.als](test/golden/case3.als)
-#### [case4.als](test/golden/case4.als)
-#### [case5.als](test/golden/case5.als)
-#### [case6.als](test/golden/case6.als)
+#### [case1.als](tests/golden/case1.als)
+#### [case2.als](tests/golden/case2.als)
+#### [case3.als](tests/golden/case3.als)
+#### [case4.als](tests/golden/case4.als)
+#### [case5.als](tests/golden/case5.als)
+#### [case6.als](tests/golden/case6.als)
