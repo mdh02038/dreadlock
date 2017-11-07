@@ -34,7 +34,7 @@ pred connect[ b1: Bus, u1: Unit, b2: Bus, u2: Unit ] {
 one sig PCIE0, A0, PCIE1, A1, A2, A3, PCIE2, PCIE3, PCIE4 extends Bus {}
 
 // Vc signatures
-one sig REQ, RESP, VC0, VC1, VC2, VC3, POST, NPOST extends Vc {}
+one sig REQ, RESP, VC0, VC1, POST, NPOST extends Vc {}
 
 // Unit signatures
 one sig case1, case1_CDEV0, case1_ADEV0, case1_ADEV1, case1_PSWITCH0, case1_ASW0 extends Unit {}
@@ -56,13 +56,9 @@ one sig case1_CDEV0_A0_RESP_OUT extends Wire {} { unit=case1_CDEV0 bus=A0 vc=RES
 // one sig case1_CDEV0_A0_VC0_OUT extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC0 direction=OUT }
 one sig case1_CDEV0_A0_VC1_IN extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC1 direction=IN }
 // one sig case1_CDEV0_A0_VC1_OUT extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC1 direction=OUT }
-one sig case1_CDEV0_A0_VC2_IN extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC2 direction=IN }
-// one sig case1_CDEV0_A0_VC2_OUT extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC2 direction=OUT }
-// one sig case1_CDEV0_A0_VC3_IN extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC3 direction=IN }
-one sig case1_CDEV0_A0_VC3_OUT extends Wire {} { unit=case1_CDEV0 bus=A0 vc=VC3 direction=OUT }
 
 // wire sigs for case1_ADEV0 
-one sig case1_ADEV0_PCIE0_POST_IN extends Wire {} { unit=case1_ADEV0 bus=PCIE0 vc=POST direction=IN }
+// one sig case1_ADEV0_PCIE0_POST_IN extends Wire {} { unit=case1_ADEV0 bus=PCIE0 vc=POST direction=IN }
 one sig case1_ADEV0_PCIE0_POST_OUT extends Wire {} { unit=case1_ADEV0 bus=PCIE0 vc=POST direction=OUT }
 one sig case1_ADEV0_PCIE0_NPOST_IN extends Wire {} { unit=case1_ADEV0 bus=PCIE0 vc=NPOST direction=IN }
 one sig case1_ADEV0_PCIE0_NPOST_OUT extends Wire {} { unit=case1_ADEV0 bus=PCIE0 vc=NPOST direction=OUT }
@@ -76,13 +72,9 @@ one sig case1_ADEV0_A0_VC0_IN extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC0 d
 // one sig case1_ADEV0_A0_VC0_OUT extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC0 direction=OUT }
 // one sig case1_ADEV0_A0_VC1_IN extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC1 direction=IN }
 one sig case1_ADEV0_A0_VC1_OUT extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC1 direction=OUT }
-// one sig case1_ADEV0_A0_VC2_IN extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC2 direction=IN }
-one sig case1_ADEV0_A0_VC2_OUT extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC2 direction=OUT }
-one sig case1_ADEV0_A0_VC3_IN extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC3 direction=IN }
-// one sig case1_ADEV0_A0_VC3_OUT extends Wire {} { unit=case1_ADEV0 bus=A0 vc=VC3 direction=OUT }
 
 // wire sigs for case1_ADEV1 
-one sig case1_ADEV1_PCIE0_POST_IN extends Wire {} { unit=case1_ADEV1 bus=PCIE0 vc=POST direction=IN }
+// one sig case1_ADEV1_PCIE0_POST_IN extends Wire {} { unit=case1_ADEV1 bus=PCIE0 vc=POST direction=IN }
 one sig case1_ADEV1_PCIE0_POST_OUT extends Wire {} { unit=case1_ADEV1 bus=PCIE0 vc=POST direction=OUT }
 one sig case1_ADEV1_PCIE0_NPOST_IN extends Wire {} { unit=case1_ADEV1 bus=PCIE0 vc=NPOST direction=IN }
 one sig case1_ADEV1_PCIE0_NPOST_OUT extends Wire {} { unit=case1_ADEV1 bus=PCIE0 vc=NPOST direction=OUT }
@@ -96,10 +88,6 @@ one sig case1_ADEV1_A0_VC0_IN extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC0 d
 // one sig case1_ADEV1_A0_VC0_OUT extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC0 direction=OUT }
 // one sig case1_ADEV1_A0_VC1_IN extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC1 direction=IN }
 one sig case1_ADEV1_A0_VC1_OUT extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC1 direction=OUT }
-// one sig case1_ADEV1_A0_VC2_IN extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC2 direction=IN }
-one sig case1_ADEV1_A0_VC2_OUT extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC2 direction=OUT }
-one sig case1_ADEV1_A0_VC3_IN extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC3 direction=IN }
-// one sig case1_ADEV1_A0_VC3_OUT extends Wire {} { unit=case1_ADEV1 bus=A0 vc=VC3 direction=OUT }
 
 // wire sigs for case1_PSWITCH0 
 one sig case1_PSWITCH0_PCIE0_POST_IN extends Wire {} { unit=case1_PSWITCH0 bus=PCIE0 vc=POST direction=IN }
@@ -142,10 +130,6 @@ one sig case1_ASW0_A0_VC0_IN extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC0 dir
 one sig case1_ASW0_A0_VC0_OUT extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC0 direction=OUT }
 one sig case1_ASW0_A0_VC1_IN extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC1 direction=IN }
 one sig case1_ASW0_A0_VC1_OUT extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC1 direction=OUT }
-one sig case1_ASW0_A0_VC2_IN extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC2 direction=IN }
-one sig case1_ASW0_A0_VC2_OUT extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC2 direction=OUT }
-one sig case1_ASW0_A0_VC3_IN extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC3 direction=IN }
-one sig case1_ASW0_A0_VC3_OUT extends Wire {} { unit=case1_ASW0 bus=A0 vc=VC3 direction=OUT }
 one sig case1_ASW0_A1_REQ_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=REQ direction=IN }
 one sig case1_ASW0_A1_REQ_OUT extends Wire {} { unit=case1_ASW0 bus=A1 vc=REQ direction=OUT }
 one sig case1_ASW0_A1_RESP_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=RESP direction=IN }
@@ -154,10 +138,6 @@ one sig case1_ASW0_A1_VC0_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC0 dir
 one sig case1_ASW0_A1_VC0_OUT extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC0 direction=OUT }
 one sig case1_ASW0_A1_VC1_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC1 direction=IN }
 one sig case1_ASW0_A1_VC1_OUT extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC1 direction=OUT }
-one sig case1_ASW0_A1_VC2_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC2 direction=IN }
-one sig case1_ASW0_A1_VC2_OUT extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC2 direction=OUT }
-one sig case1_ASW0_A1_VC3_IN extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC3 direction=IN }
-one sig case1_ASW0_A1_VC3_OUT extends Wire {} { unit=case1_ASW0 bus=A1 vc=VC3 direction=OUT }
 one sig case1_ASW0_A2_REQ_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=REQ direction=IN }
 one sig case1_ASW0_A2_REQ_OUT extends Wire {} { unit=case1_ASW0 bus=A2 vc=REQ direction=OUT }
 one sig case1_ASW0_A2_RESP_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=RESP direction=IN }
@@ -166,10 +146,6 @@ one sig case1_ASW0_A2_VC0_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC0 dir
 one sig case1_ASW0_A2_VC0_OUT extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC0 direction=OUT }
 one sig case1_ASW0_A2_VC1_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC1 direction=IN }
 one sig case1_ASW0_A2_VC1_OUT extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC1 direction=OUT }
-one sig case1_ASW0_A2_VC2_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC2 direction=IN }
-one sig case1_ASW0_A2_VC2_OUT extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC2 direction=OUT }
-one sig case1_ASW0_A2_VC3_IN extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC3 direction=IN }
-one sig case1_ASW0_A2_VC3_OUT extends Wire {} { unit=case1_ASW0 bus=A2 vc=VC3 direction=OUT }
 one sig case1_ASW0_A3_REQ_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=REQ direction=IN }
 one sig case1_ASW0_A3_REQ_OUT extends Wire {} { unit=case1_ASW0 bus=A3 vc=REQ direction=OUT }
 one sig case1_ASW0_A3_RESP_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=RESP direction=IN }
@@ -178,10 +154,6 @@ one sig case1_ASW0_A3_VC0_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC0 dir
 one sig case1_ASW0_A3_VC0_OUT extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC0 direction=OUT }
 one sig case1_ASW0_A3_VC1_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC1 direction=IN }
 one sig case1_ASW0_A3_VC1_OUT extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC1 direction=OUT }
-one sig case1_ASW0_A3_VC2_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC2 direction=IN }
-one sig case1_ASW0_A3_VC2_OUT extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC2 direction=OUT }
-one sig case1_ASW0_A3_VC3_IN extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC3 direction=IN }
-one sig case1_ASW0_A3_VC3_OUT extends Wire {} { unit=case1_ASW0 bus=A3 vc=VC3 direction=OUT }
 
 
 // bus connection rules// A connection rules
@@ -190,8 +162,6 @@ pred A_noconnect[ b: Bus, u: Unit ] {
     all v: RESP, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]
     all v: VC0, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]
     all v: VC1, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]
-    all v: VC2, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]
-    all v: VC3, d:  OUT | no dep[ u.~unit & b.~bus & v.~vc & d.~direction ]
 }
 
 
@@ -212,14 +182,6 @@ pred A_connect[ b1: Bus, u1: Unit, b2: Bus, u2: Unit ] {
 				u2.~unit & b2.~bus & (VC1).~vc & IN.~direction
     all v1: VC1 | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = 
 					u1.~unit & b1.~bus & (VC1).~vc & IN.~direction
-    all v1: VC2 | let p = u1.~unit & b1.~bus & v1.~vc & OUT.~direction | some p => dep[p] = 
-				u2.~unit & b2.~bus & (VC2).~vc & IN.~direction
-    all v1: VC2 | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = 
-					u1.~unit & b1.~bus & (VC2).~vc & IN.~direction
-    all v1: VC3 | let p = u1.~unit & b1.~bus & v1.~vc & OUT.~direction | some p => dep[p] = 
-				u2.~unit & b2.~bus & (VC3).~vc & IN.~direction
-    all v1: VC3 | let p = u2.~unit & b2.~bus & v1.~vc & OUT.~direction | some p => dep[p] = 
-					u1.~unit & b1.~bus & (VC3).~vc & IN.~direction
 }
 // PCIE connection rules
 pred PCIE_noconnect[ b: Bus, u: Unit ] {
@@ -255,9 +217,7 @@ fact {
     dep[case1_CDEV0_A0_REQ_IN] =  case1_CDEV0_A0_REQ_OUT + case1_CDEV0_A0_RESP_OUT
 //    no dep[case1_CDEV0_A0_RESP_IN]
 //    no dep[case1_CDEV0_A0_VC0_IN]
-    dep[case1_CDEV0_A0_VC1_IN] =  case1_CDEV0_A0_RESP_OUT + case1_CDEV0_A0_VC3_OUT
-    dep[case1_CDEV0_A0_VC2_IN] =  case1_CDEV0_A0_RESP_OUT + case1_CDEV0_A0_VC3_OUT
-//    no dep[case1_CDEV0_A0_VC3_IN]
+    dep[case1_CDEV0_A0_VC1_IN] =  case1_CDEV0_A0_RESP_OUT
     dep[case1_CDEV0_PCIE0_NPOST_IN] =  case1_CDEV0_A0_REQ_OUT + case1_CDEV0_PCIE0_NPOST_OUT + case1_CDEV0_PCIE0_RESP_OUT
     dep[case1_CDEV0_PCIE0_POST_IN] =  case1_CDEV0_A0_REQ_OUT + case1_CDEV0_PCIE0_POST_OUT
     dep[case1_CDEV0_PCIE0_RESP_IN] =  case1_CDEV0_PCIE0_RESP_OUT
@@ -265,27 +225,23 @@ fact {
 
 // case1_ADEV0 rules
 fact {
-    dep[case1_ADEV0_A0_REQ_IN] =  case1_ADEV0_A0_RESP_OUT + case1_ADEV0_A0_VC2_OUT
+    dep[case1_ADEV0_A0_REQ_IN] =  case1_ADEV0_A0_RESP_OUT
 //    no dep[case1_ADEV0_A0_RESP_IN]
-    dep[case1_ADEV0_A0_VC0_IN] =  case1_ADEV0_A0_REQ_OUT + case1_ADEV0_A0_RESP_OUT + case1_ADEV0_A0_VC1_OUT + case1_ADEV0_A0_VC2_OUT + case1_ADEV0_PCIE0_NPOST_OUT + case1_ADEV0_PCIE0_POST_OUT
+    dep[case1_ADEV0_A0_VC0_IN] =  case1_ADEV0_A0_REQ_OUT + case1_ADEV0_A0_RESP_OUT + case1_ADEV0_A0_VC1_OUT + case1_ADEV0_PCIE0_NPOST_OUT + case1_ADEV0_PCIE0_POST_OUT
 //    no dep[case1_ADEV0_A0_VC1_IN]
-//    no dep[case1_ADEV0_A0_VC2_IN]
-    dep[case1_ADEV0_A0_VC3_IN] =  case1_ADEV0_A0_RESP_OUT
-    dep[case1_ADEV0_PCIE0_NPOST_IN] =  case1_ADEV0_A0_REQ_OUT + case1_ADEV0_A0_VC2_OUT + case1_ADEV0_PCIE0_RESP_OUT
-    dep[case1_ADEV0_PCIE0_POST_IN] =  case1_ADEV0_A0_VC2_OUT
+    dep[case1_ADEV0_PCIE0_NPOST_IN] =  case1_ADEV0_A0_REQ_OUT + case1_ADEV0_PCIE0_RESP_OUT
+//    no dep[case1_ADEV0_PCIE0_POST_IN]
 //    no dep[case1_ADEV0_PCIE0_RESP_IN]
 }
 
 // case1_ADEV1 rules
 fact {
-    dep[case1_ADEV1_A0_REQ_IN] =  case1_ADEV1_A0_RESP_OUT + case1_ADEV1_A0_VC2_OUT
+    dep[case1_ADEV1_A0_REQ_IN] =  case1_ADEV1_A0_RESP_OUT
 //    no dep[case1_ADEV1_A0_RESP_IN]
-    dep[case1_ADEV1_A0_VC0_IN] =  case1_ADEV1_A0_REQ_OUT + case1_ADEV1_A0_RESP_OUT + case1_ADEV1_A0_VC1_OUT + case1_ADEV1_A0_VC2_OUT + case1_ADEV1_PCIE0_NPOST_OUT + case1_ADEV1_PCIE0_POST_OUT
+    dep[case1_ADEV1_A0_VC0_IN] =  case1_ADEV1_A0_REQ_OUT + case1_ADEV1_A0_RESP_OUT + case1_ADEV1_A0_VC1_OUT + case1_ADEV1_PCIE0_NPOST_OUT + case1_ADEV1_PCIE0_POST_OUT
 //    no dep[case1_ADEV1_A0_VC1_IN]
-//    no dep[case1_ADEV1_A0_VC2_IN]
-    dep[case1_ADEV1_A0_VC3_IN] =  case1_ADEV1_A0_RESP_OUT
-    dep[case1_ADEV1_PCIE0_NPOST_IN] =  case1_ADEV1_A0_REQ_OUT + case1_ADEV1_A0_VC2_OUT + case1_ADEV1_PCIE0_RESP_OUT
-    dep[case1_ADEV1_PCIE0_POST_IN] =  case1_ADEV1_A0_VC2_OUT
+    dep[case1_ADEV1_PCIE0_NPOST_IN] =  case1_ADEV1_A0_REQ_OUT + case1_ADEV1_PCIE0_RESP_OUT
+//    no dep[case1_ADEV1_PCIE0_POST_IN]
 //    no dep[case1_ADEV1_PCIE0_RESP_IN]
 }
 
@@ -314,26 +270,18 @@ fact {
     dep[case1_ASW0_A0_RESP_IN] =  case1_ASW0_A1_RESP_OUT + case1_ASW0_A2_RESP_OUT + case1_ASW0_A3_RESP_OUT
     dep[case1_ASW0_A0_VC0_IN] =  case1_ASW0_A1_VC0_OUT + case1_ASW0_A2_VC0_OUT + case1_ASW0_A3_VC0_OUT
     dep[case1_ASW0_A0_VC1_IN] =  case1_ASW0_A1_VC1_OUT + case1_ASW0_A2_VC1_OUT + case1_ASW0_A3_VC1_OUT
-    dep[case1_ASW0_A0_VC2_IN] =  case1_ASW0_A1_VC2_OUT + case1_ASW0_A2_VC2_OUT + case1_ASW0_A3_VC2_OUT
-    dep[case1_ASW0_A0_VC3_IN] =  case1_ASW0_A1_VC3_OUT + case1_ASW0_A2_VC3_OUT + case1_ASW0_A3_VC3_OUT
     dep[case1_ASW0_A1_REQ_IN] =  case1_ASW0_A0_REQ_OUT + case1_ASW0_A2_REQ_OUT + case1_ASW0_A3_REQ_OUT
     dep[case1_ASW0_A1_RESP_IN] =  case1_ASW0_A0_RESP_OUT + case1_ASW0_A2_RESP_OUT + case1_ASW0_A3_RESP_OUT
     dep[case1_ASW0_A1_VC0_IN] =  case1_ASW0_A0_VC0_OUT + case1_ASW0_A2_VC0_OUT + case1_ASW0_A3_VC0_OUT
     dep[case1_ASW0_A1_VC1_IN] =  case1_ASW0_A0_VC1_OUT + case1_ASW0_A2_VC1_OUT + case1_ASW0_A3_VC1_OUT
-    dep[case1_ASW0_A1_VC2_IN] =  case1_ASW0_A0_VC2_OUT + case1_ASW0_A2_VC2_OUT + case1_ASW0_A3_VC2_OUT
-    dep[case1_ASW0_A1_VC3_IN] =  case1_ASW0_A0_VC3_OUT + case1_ASW0_A2_VC3_OUT + case1_ASW0_A3_VC3_OUT
     dep[case1_ASW0_A2_REQ_IN] =  case1_ASW0_A0_REQ_OUT + case1_ASW0_A1_REQ_OUT + case1_ASW0_A3_REQ_OUT
     dep[case1_ASW0_A2_RESP_IN] =  case1_ASW0_A0_RESP_OUT + case1_ASW0_A1_RESP_OUT + case1_ASW0_A3_RESP_OUT
     dep[case1_ASW0_A2_VC0_IN] =  case1_ASW0_A0_VC0_OUT + case1_ASW0_A1_VC0_OUT + case1_ASW0_A3_VC0_OUT
     dep[case1_ASW0_A2_VC1_IN] =  case1_ASW0_A0_VC1_OUT + case1_ASW0_A1_VC1_OUT + case1_ASW0_A3_VC1_OUT
-    dep[case1_ASW0_A2_VC2_IN] =  case1_ASW0_A0_VC2_OUT + case1_ASW0_A1_VC2_OUT + case1_ASW0_A3_VC2_OUT
-    dep[case1_ASW0_A2_VC3_IN] =  case1_ASW0_A0_VC3_OUT + case1_ASW0_A1_VC3_OUT + case1_ASW0_A3_VC3_OUT
     dep[case1_ASW0_A3_REQ_IN] =  case1_ASW0_A0_REQ_OUT + case1_ASW0_A1_REQ_OUT + case1_ASW0_A2_REQ_OUT
     dep[case1_ASW0_A3_RESP_IN] =  case1_ASW0_A0_RESP_OUT + case1_ASW0_A1_RESP_OUT + case1_ASW0_A2_RESP_OUT
     dep[case1_ASW0_A3_VC0_IN] =  case1_ASW0_A0_VC0_OUT + case1_ASW0_A1_VC0_OUT + case1_ASW0_A2_VC0_OUT
     dep[case1_ASW0_A3_VC1_IN] =  case1_ASW0_A0_VC1_OUT + case1_ASW0_A1_VC1_OUT + case1_ASW0_A2_VC1_OUT
-    dep[case1_ASW0_A3_VC2_IN] =  case1_ASW0_A0_VC2_OUT + case1_ASW0_A1_VC2_OUT + case1_ASW0_A2_VC2_OUT
-    dep[case1_ASW0_A3_VC3_IN] =  case1_ASW0_A0_VC3_OUT + case1_ASW0_A1_VC3_OUT + case1_ASW0_A2_VC3_OUT
 }
 
 // connections for case1 {

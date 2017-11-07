@@ -6,8 +6,6 @@ bus A {
     vc RESP;
     vc VC0;
     vc VC1;
-    vc VC2;
-    vc VC3;
 }
 
 /*****************************************
@@ -41,23 +39,18 @@ module ADEV (
     A:  A0
   )
 {
-      PCIE0.POST -> A0.VC2;
 
-      PCIE0.NPOST -> A0.VC2;
       PCIE0.NPOST -> PCIE0.RESP;
       PCIE0.NPOST -> A0.REQ;
 
       A0.REQ -> A0.RESP;
-      A0.REQ -> A0.VC2;
 
       A0.VC0 -> PCIE0.POST;
       A0.VC0 -> PCIE0.NPOST;
       A0.VC0 -> A0.REQ;
       A0.VC0 -> A0.VC1;
-      A0.VC0 -> A0.VC2;
       A0.VC0 -> A0.RESP;
 
-      A0.VC3 -> A0.RESP;
 }
 
 module ADEV_WITH_OPTION1 (
@@ -65,23 +58,18 @@ module ADEV_WITH_OPTION1 (
     A:  A0
   )
 {
-      PCIE0.POST -> A0.VC2;
 
-      PCIE0.NPOST -> A0.VC2;
       PCIE0.NPOST -> PCIE0.RESP;
 
       A0.REQ -> A0.RESP;
       A0.REQ -> A0.VC1;
-      A0.REQ -> A0.VC2;
 
       A0.VC0 -> PCIE0.POST;
       A0.VC0 -> PCIE0.NPOST;
       A0.VC0 -> A0.REQ;
       A0.VC0 -> A0.VC1;
-      A0.VC0 -> A0.VC2;
       A0.VC0 -> A0.RESP;
 
-      A0.VC3 -> A0.RESP;
 }
 
 module CDEV (
@@ -101,11 +89,8 @@ module CDEV (
     A0.REQ -> A0.REQ;
     A0.REQ -> A0.RESP;
 
-    A0.VC1 -> A0.VC3;
     A0.VC1 -> A0.RESP;
 
-    A0.VC2 -> A0.VC3;
-    A0.VC2 -> A0.RESP;
 }
 
 module BDEV_S ( PCIE: PCIE0, 
