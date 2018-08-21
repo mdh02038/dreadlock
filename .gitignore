@@ -1,0 +1,6 @@
+*.gz
+*.o
+*.log
+.deps
+*.status
+
